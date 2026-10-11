@@ -1,0 +1,10 @@
+# Build output
+bin/
+obj/
+tests/bin/
+tests/obj/
+*.user
+*.zip
+
+# CI: game DLLs downloaded from the dedicated server (never committed)
+.valheim-managed/
