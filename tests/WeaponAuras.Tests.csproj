@@ -29,6 +29,7 @@
     <Compile Include="../src/WeaponKinds.cs" />
     <Compile Include="../src/Looks.cs" />
     <Compile Include="../src/Fixes.cs" />
+    <Compile Include="../src/FitMath.cs" />
   </ItemGroup>
 
   <ItemGroup>
