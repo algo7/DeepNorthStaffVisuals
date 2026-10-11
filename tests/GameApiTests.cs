@@ -41,4 +41,29 @@ internal static partial class Tests
         Eq(typeof(GameObject), typeof(ObjectDB).GetMethod("GetItemPrefab", new[] { typeof(int) })?.ReturnType, "ObjectDB.GetItemPrefab(int)");
         Eq(typeof(GameObject), typeof(ObjectDB).GetMethod("GetItemPrefab", new[] { typeof(string) })?.ReturnType, "ObjectDB.GetItemPrefab(string)");
     }
+
+    private static void Test_Game_TheEquipment()
+    {
+        var attach = Method(typeof(VisEquipment), "AttachItem");
+        Eq(typeof(GameObject), attach.ReturnType, "VisEquipment.AttachItem returns the model");
+        Param(attach, "itemHash", typeof(int));
+        foreach (var name in new[] { "m_rightItemInstance", "m_leftItemInstance", "m_rightBackItemInstance", "m_leftBackItemInstance" })
+            Field(typeof(VisEquipment), name, typeof(GameObject));
+        foreach (var name in new[] { "m_currentRightItemHash", "m_currentLeftItemHash", "m_currentRightBackItemHash", "m_currentLeftBackItemHash" })
+            Field(typeof(VisEquipment), name, typeof(int));
+    }
+
+    private static void Test_Game_TheKey()
+    {
+        var takeInput = Method(typeof(Player), "TakeInput");
+        Eq(typeof(bool), takeInput.ReturnType, "Player.TakeInput returns bool");
+        Eq(0, takeInput.GetParameters().Length, "Player.TakeInput()");
+        True(typeof(ZInput).GetMethod("GetKeyDown", new[] { typeof(KeyCode), typeof(bool) }) != null, "ZInput.GetKeyDown(KeyCode, bool)");
+        True(typeof(ZInput).GetMethod("GetKey", new[] { typeof(KeyCode), typeof(bool) }) != null, "ZInput.GetKey(KeyCode, bool)");
+    }
+
+    private static void Test_Game_TheMessage()
+    {
+        Param(Method(typeof(MessageHud), "ShowMessage"), "log", typeof(bool));
+    }
 }
