@@ -66,4 +66,10 @@ internal static partial class Tests
     {
         Param(Method(typeof(MessageHud), "ShowMessage"), "log", typeof(bool));
     }
+
+    private static void Test_Game_TheHint()
+    {
+        True(Method(typeof(KeyHints), "UpdateHints").GetParameters().Length == 0, "KeyHints.UpdateHints()");
+        Field(typeof(KeyHints), "m_combatHints", typeof(GameObject));
+    }
 }

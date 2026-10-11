@@ -52,6 +52,7 @@ namespace WeaponAuras
                 Log.LogError("Looks are off: without the equipment hook nothing can be shown");
                 return;
             }
+            if (!TryPatch(harmony, typeof(HintPatches), "key hint hook")) Log.LogWarning("No 'Change look' key hint (the key still works)");
             SceneManager.sceneLoaded += OnSceneLoaded;
             s_running = true;
             Log.LogInfo($"{Name} loaded (v{PluginVersion})");
