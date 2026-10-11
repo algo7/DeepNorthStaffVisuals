@@ -16,8 +16,19 @@
     <ManagedDir Condition="'$(ManagedDir)' == ''">$(ValheimDir)/valheim_Data/Managed</ManagedDir>
   </PropertyGroup>
 
+  <!-- Where the game's DLLs are: the donor test reads the game's asset list next to them. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ManagedDir</_Parameter1>
+      <_Parameter2>$(ManagedDir)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="*.cs" />
+    <Compile Include="../src/WeaponKinds.cs" />
+    <Compile Include="../src/Looks.cs" />
+    <Compile Include="../src/Fixes.cs" />
   </ItemGroup>
 
   <ItemGroup>
