@@ -67,7 +67,7 @@ namespace WeaponAuras
                 case Kind.Sword: return 0.21;
                 case Kind.Greatsword: return 0.27;
                 case Kind.Knife: return 0.26;
-                case Kind.Axe: return 0.57;
+                case Kind.Axe: return 0.58;
                 case Kind.Battleaxe: return 0.74;
                 case Kind.Mace: return 0.81;
                 case Kind.Sledge: return 0.74;
@@ -81,8 +81,8 @@ namespace WeaponAuras
 
         /// <summary>
         /// Where the game's own variant weapons of a kind start their effects (the Frostfire ones): the same as
-        /// <see cref="EffectStart"/> except atgeirs, whose Frostfire flames start at 53 %.
+        /// <see cref="EffectStart"/> except atgeirs, whose Frostfire flames start at 55 %.
         /// </summary>
-        public static double GameEffectStart(Kind kind) => kind == Kind.Atgeir ? 0.53 : EffectStart(kind);
+        public static double GameEffectStart(Kind kind) => kind == Kind.Atgeir ? 0.55 : EffectStart(kind);
     }
 }

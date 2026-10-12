@@ -49,13 +49,13 @@ internal static partial class Tests
 
     private static void Test_Kinds_BusinessEnds()
     {
-        var ours = new[] { (Kind.Sword, 0.21), (Kind.Greatsword, 0.27), (Kind.Knife, 0.26), (Kind.Axe, 0.57), (Kind.Battleaxe, 0.74),
+        var ours = new[] { (Kind.Sword, 0.21), (Kind.Greatsword, 0.27), (Kind.Knife, 0.26), (Kind.Axe, 0.58), (Kind.Battleaxe, 0.74),
             (Kind.Mace, 0.81), (Kind.Sledge, 0.74), (Kind.Spear, 0.66), (Kind.Atgeir, 0.40), (Kind.Staff, 0.55), (Kind.Bow, 0.0),
             (Kind.Crossbow, 0.69) };
         foreach (var (kind, start) in ours)
         {
             Eq(start, WeaponKinds.EffectStart(kind), $"{kind}: our looks start here");
-            Eq(kind == Kind.Atgeir ? 0.53 : start, WeaponKinds.GameEffectStart(kind), $"{kind}: the game's own variants start here");
+            Eq(kind == Kind.Atgeir ? 0.55 : start, WeaponKinds.GameEffectStart(kind), $"{kind}: the game's own variants start here");
         }
     }
 }

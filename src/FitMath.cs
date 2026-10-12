@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WeaponAuras
@@ -28,8 +29,13 @@ namespace WeaponAuras
         /// <summary>The unit vector of axis 0, 1 or 2, times sign.</summary>
         public static V3 Axis(int axis, int sign) => new V3(axis == 0 ? sign : 0, axis == 1 ? sign : 0, axis == 2 ? sign : 0);
 
-        public static V3 WithAxis(V3 v, int axis, double value) =>
-            new V3(axis == 0 ? value : v.X, axis == 1 ? value : v.Y, axis == 2 ? value : v.Z);
+        public static V3 Cross(V3 a, V3 b) => new V3(a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X);
+
+        /// <summary>This vector at length 1 (a zero vector stays zero).</summary>
+        public V3 Normalized() => Length < 1e-12 ? this : (1 / Length) * this;
+
+        /// <summary>The component with the largest magnitude, with its sign.</summary>
+        public double Largest() => Math.Abs(X) >= Math.Abs(Y) && Math.Abs(X) >= Math.Abs(Z) ? X : Math.Abs(Y) >= Math.Abs(Z) ? Y : Z;
 
         public override string ToString() => $"({X:0.###}, {Y:0.###}, {Z:0.###})";
     }
@@ -49,59 +55,74 @@ namespace WeaponAuras
     }
 
     /// <summary>
-    /// A model's own frame, read from the box around its meshes: length (the longest side), width (the middle one),
-    /// thickness (the shortest), each as a model axis with a direction. Index 0 = length, 1 = width, 2 = thickness.
+    /// A model's own frame: length, width and thickness as unit vectors in model space, read from its largest mesh's own
+    /// axes (the mesh can sit turned inside the model, like every atgeir's), and the model's extent along each, from the
+    /// corners of all its mesh boxes. Index 0 = length, 1 = width, 2 = thickness.
     /// </summary>
     internal sealed class ModelFrame
     {
         private const double Tiny = 1e-6;
 
-        public readonly Box Box;
+        /// <summary>Length (towards the head or tip), width, thickness: a rotation of the model's axes, never a mirror.</summary>
+        public readonly V3[] Axes = new V3[3];
 
-        /// <summary>The model axis (0 x, 1 y, 2 z) of length, width, thickness.</summary>
-        public readonly int[] Axis = new int[3];
+        /// <summary>The model's extent along each frame axis.</summary>
+        public readonly double[] Min = new double[3], Max = new double[3];
 
-        /// <summary>+1 / -1: which way along that model axis the frame axis points.</summary>
-        public readonly int[] Sign = new int[3];
-
-        /// <param name="lengthSign">Which way along its model axis the length points, towards the head or tip (+1 / -1).</param>
-        public ModelFrame(Box box, int lengthSign)
+        /// <param name="meshAxes">The largest mesh's x, y, z axes in model space.</param>
+        /// <param name="meshSizes">That mesh's size along each of them.</param>
+        /// <param name="headSign">
+        /// Which way the head or tip points: length is turned so its z component (or, if it has almost none, its largest
+        /// component) has this sign.
+        /// </param>
+        /// <param name="corners">The corners of every mesh box of the model, in model space.</param>
+        public ModelFrame(V3[] meshAxes, double[] meshSizes, int headSign, IEnumerable<V3> corners)
         {
-            Box = box;
-            var order = Enumerable.Range(0, 3).OrderByDescending(box.Size).ThenBy(a => a).ToArray();
-            Axis[0] = order[0];
-            Axis[1] = order[1];
-            Axis[2] = order[2];
-            Sign[0] = lengthSign >= 0 ? 1 : -1;
-            Sign[1] = 1;
-            // Thickness = length × width, so the frame is a rotation of the model axes, never a mirror image.
-            Sign[2] = Sign[0] * Sign[1] * (IsCyclic(order[0], order[1]) ? 1 : -1);
+            var order = Enumerable.Range(0, 3).OrderByDescending(i => meshSizes[i]).ThenBy(i => i).ToArray();
+            var length = meshAxes[order[0]].Normalized();
+            var width = meshAxes[order[1]].Normalized();
+            var reference = Math.Abs(length.Z) >= 0.1 ? length.Z : length.Largest();
+            if (reference < 0 != headSign < 0) length = -1 * length;
+            if (width.Largest() < 0) width = -1 * width;
+            Axes[0] = length;
+            Axes[1] = width;
+            Axes[2] = V3.Cross(length, width);
+            for (var k = 0; k < 3; k++)
+            {
+                Min[k] = double.MaxValue;
+                Max[k] = double.MinValue;
+            }
+            foreach (var c in corners)
+                for (var k = 0; k < 3; k++)
+                {
+                    var d = V3.Dot(c, Axes[k]);
+                    if (d < Min[k]) Min[k] = d;
+                    if (d > Max[k]) Max[k] = d;
+                }
         }
 
-        /// <summary>(a, b, then the third) in x→y→z→x order.</summary>
-        private static bool IsCyclic(int a, int b) => (a + 1) % 3 == b;
+        /// <summary>A model that is one axis-aligned box (its mesh not turned).</summary>
+        public ModelFrame(Box box, int headSign)
+            : this(new[] { V3.Axis(0, 1), V3.Axis(1, 1), V3.Axis(2, 1) }, new[] { box.Size(0), box.Size(1), box.Size(2) }, headSign,
+                Enumerable.Range(0, 8).Select(i => new V3((i & 1) == 0 ? box.Min.X : box.Max.X, (i & 2) == 0 ? box.Min.Y : box.Max.Y,
+                    (i & 4) == 0 ? box.Min.Z : box.Max.Z)))
+        {
+        }
 
-        public double Size(int k) => Box.Size(Axis[k]);
+        public double Size(int k) => Max[k] - Min[k];
 
         /// <summary>The model-space unit vector of frame axis k.</summary>
-        public V3 Unit(int k) => V3.Axis(Axis[k], Sign[k]);
+        public V3 Unit(int k) => Axes[k];
 
-        /// <summary>Where p lies along frame axis k: 0 at the box side the axis starts from, 1 at the side it points to.</summary>
+        /// <summary>Where p lies along frame axis k: 0 at the side the axis starts from, 1 at the side it points to.</summary>
         public double Fraction(V3 p, int k)
         {
-            var a = Axis[k];
-            var size = Box.Size(a);
-            if (size < Tiny) return 0.5;
-            return Sign[k] > 0 ? (p[a] - Box.Min[a]) / size : (Box.Max[a] - p[a]) / size;
+            var size = Size(k);
+            return size < Tiny ? 0.5 : (V3.Dot(p, Axes[k]) - Min[k]) / size;
         }
 
-        /// <summary>The model coordinate (on axis Axis[k]) at a fraction along frame axis k.</summary>
-        public double Coordinate(int k, double fraction)
-        {
-            var a = Axis[k];
-            var size = Box.Size(a);
-            return Sign[k] > 0 ? Box.Min[a] + fraction * size : Box.Max[a] - fraction * size;
-        }
+        /// <summary>The position along frame axis k (as a distance along Unit(k)) at a fraction of the extent.</summary>
+        public double Coordinate(int k, double fraction) => Min[k] + fraction * Size(k);
     }
 
     /// <summary>
@@ -172,7 +193,7 @@ namespace WeaponAuras
             {
                 var f = Donor.Fraction(p, k);
                 if (k == 0) f = MapLength(f);
-                result = V3.WithAxis(result, Target.Axis[k], Target.Coordinate(k, f + m_shift[k]));
+                result = result + Target.Coordinate(k, f + m_shift[k]) * Target.Unit(k);
             }
             return result;
         }

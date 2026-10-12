@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -63,7 +64,7 @@ namespace WeaponAuras
             var held = HeldModel(prefab.transform);
             if (held == null || held.name != "attach") return Kind.None; // fitted to the body (fist weapons, Berserkir axes)
             if (HasOwnEffects(held)) return Kind.None;
-            return ModelBox(held, out _) ? kind : Kind.None;
+            return ModelFrameOf(held, kind, out _) ? kind : Kind.None;
         }
 
         /// <summary>The model the game puts in the hand: the first child named attach or attach_skin (VisEquipment.AttachItem).</summary>
@@ -83,12 +84,17 @@ namespace WeaponAuras
             return false;
         }
 
-        /// <summary>The box around every mesh of a model, in the model's own space; false if it has no mesh.</summary>
-        public static bool ModelBox(Transform model, out Box box)
+        /// <summary>
+        /// A model's frame (see <see cref="ModelFrame"/>): its largest mesh's own axes, turned so the length points to the
+        /// kind's head, and the extent of every mesh box along them, in the model's own space. False if it has no mesh.
+        /// </summary>
+        public static bool ModelFrameOf(Transform model, Kind kind, out ModelFrame frame)
         {
-            var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-            var any = false;
+            frame = null;
+            var corners = new List<V3>();
+            V3[] axes = null;
+            double[] sizes = null;
+            var largest = -1.0;
             var toModel = model.worldToLocalMatrix;
             foreach (var filter in model.GetComponentsInChildren<MeshFilter>(true))
             {
@@ -100,13 +106,27 @@ namespace WeaponAuras
                     var corner = b.center + Vector3.Scale(b.extents,
                         new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
                     var p = m.MultiplyPoint3x4(corner);
-                    min = Vector3.Min(min, p);
-                    max = Vector3.Max(max, p);
+                    corners.Add(new V3(p.x, p.y, p.z));
                 }
-                any = true;
+                var meshAxes = new V3[3];
+                var meshSizes = new double[3];
+                for (var a = 0; a < 3; a++)
+                {
+                    Vector3 column = m.GetColumn(a);
+                    meshAxes[a] = new V3(column.x, column.y, column.z);
+                    meshSizes[a] = 2 * b.extents[a] * column.magnitude;
+                }
+                var size = Math.Max(meshSizes[0], Math.Max(meshSizes[1], meshSizes[2]));
+                if (size > largest)
+                {
+                    largest = size;
+                    axes = meshAxes;
+                    sizes = meshSizes;
+                }
             }
-            box = new Box(new V3(min.x, min.y, min.z), new V3(max.x, max.y, max.z));
-            return any;
+            if (axes == null) return false;
+            frame = new ModelFrame(axes, sizes, WeaponKinds.HeadSign(kind), corners);
+            return true;
         }
 
         /// <summary>Inside the upgrade glow, the swing trail or our container (between t and the model).</summary>
@@ -152,13 +172,14 @@ namespace WeaponAuras
             var prefab = ObjectDB.instance != null ? ObjectDB.instance.GetItemPrefab(name) : null;
             var item = prefab != null ? prefab.GetComponent<ItemDrop>() : null;
             var model = prefab != null ? prefab.transform.Find("attach") : null;
-            if (item == null || model == null || !ModelBox(model, out var box)) return null;
+            if (item == null || model == null) return null;
+            var shared = item.m_itemData.m_shared;
+            var kind = WeaponKinds.KindOf(shared.m_itemType, shared.m_skillType, name);
+            if (!ModelFrameOf(model, kind, out var frame)) return null;
             var parts = new List<Transform>();
             FindParts(model, parts);
             if (parts.Count == 0) return null;
-            var shared = item.m_itemData.m_shared;
-            var kind = WeaponKinds.KindOf(shared.m_itemType, shared.m_skillType, name);
-            return new Donor { Name = name, Kind = kind, Model = model, Frame = new ModelFrame(box, WeaponKinds.HeadSign(kind)), Parts = parts };
+            return new Donor { Name = name, Kind = kind, Model = model, Frame = frame, Parts = parts };
         }
 
         /// <summary>The topmost children that hold particle systems or lights but no mesh of the weapon.</summary>

@@ -23,11 +23,9 @@ internal static partial class Tests
     private static void Test_Fit_FrameOfASword()
     {
         var frame = new ModelFrame(GoldSword, 1);
-        Eq(2, frame.Axis[0], "length = z");
-        Eq(0, frame.Axis[1], "width = x");
-        Eq(1, frame.Axis[2], "thickness = y");
-        Eq(1, frame.Sign[0], "length points to +z (the far end)");
-        Eq(1, frame.Sign[2], "z × x = +y");
+        Near(new V3(0, 0, 1), frame.Unit(0), "length = +z");
+        Near(new V3(1, 0, 0), frame.Unit(1), "width = +x");
+        Near(new V3(0, 1, 0), frame.Unit(2), "thickness = z × x = +y");
         Near(0, frame.Fraction(new V3(0, 0, -0.2), 0), "hand end");
         Near(1, frame.Fraction(new V3(0, 0, 1.2), 0), "tip");
     }
@@ -35,18 +33,17 @@ internal static partial class Tests
     private static void Test_Fit_LengthSignIsGiven()
     {
         var frame = new ModelFrame(Splitnir, -1);
-        Eq(2, frame.Axis[0], "length = z");
-        Eq(-1, frame.Sign[0], "a spear's head points to -z");
-        Eq(-1, frame.Sign[2], "(-z) × x = -y: still a rotation");
+        Near(new V3(0, 0, -1), frame.Unit(0), "a spear's head points to -z");
+        Near(new V3(0, -1, 0), frame.Unit(2), "(-z) × x = -y: still a rotation");
         Near(1, frame.Fraction(new V3(0, 0, -2.47), 0), "the head at -z is fraction 1");
-        Eq(1, new ModelFrame(Splitnir, 1).Sign[0], "the given direction wins over which end is farther");
+        Near(new V3(0, 0, 1), new ModelFrame(Splitnir, 1).Unit(0), "the given direction wins over which end is farther");
     }
 
     private static void Test_Fit_EqualSidesPickTheLowerAxis()
     {
         var frame = new ModelFrame(IronMace, 1);
-        Eq(0, frame.Axis[1], "width = x when x and y are equal");
-        Eq(1, frame.Axis[2], "thickness = y");
+        Near(new V3(1, 0, 0), frame.Unit(1), "width = x when x and y are equal");
+        Near(new V3(0, 1, 0), frame.Unit(2), "thickness = y");
     }
 
     private static void Test_Fit_NeverAMirror()
@@ -146,10 +143,10 @@ internal static partial class Tests
     private static void Test_Fit_LongerOnAtgeirs()
     {
         var atgeir = new ModelFrame(Atgeir, 1);
-        var fit = new Fit(atgeir, atgeir, 0.53, 0.40, null);
-        Near(0.40, Lands(fit, 0.53), "the game's Frostfire Atgeir flames start at 53 %, ours at 40 %");
-        Near(0.40 + 0.41 * 0.6 / 0.47, Lands(fit, 0.94), "and still end near the tip");
-        Near(0.6 / 0.47, fit.EmitterStretch(new V3(0, 0, 1)), "the emitters grow by 60 / 47");
+        var fit = new Fit(atgeir, atgeir, 0.55, 0.40, null);
+        Near(0.40, Lands(fit, 0.55), "the game's Frostfire Atgeir flames start at 55 %, ours at 40 %");
+        Near(0.40 + 0.42 * 0.6 / 0.45, Lands(fit, 0.97), "and still end near the tip");
+        Near(0.6 / 0.45, fit.EmitterStretch(new V3(0, 0, 1)), "the emitters grow by 60 / 45");
     }
 
     private static void Test_Fit_SameStartSameKindIsUnchanged()
@@ -159,5 +156,46 @@ internal static partial class Tests
         foreach (var f in new[] { -0.1, 0.0, 0.1, 0.21, 0.5, 1.0 })
             Near(f, Lands(fit, f), $"fraction {f} stays");
         Near(1, fit.EmitterStretch(new V3(0, 0, 1)), "no stretch");
+    }
+
+    /// <summary>
+    /// A model whose mesh is turned inside the model, like every atgeir (about 21° from z): the mesh's own axes are
+    /// x' = (cos a, 0, -sin a), y' = y, z' = (sin a, 0, cos a); its box in those axes runs from min to max.
+    /// </summary>
+    private static ModelFrame Tilted(double degrees, V3 min, V3 max)
+    {
+        var a = degrees * Math.PI / 180;
+        var axes = new[] { new V3(Math.Cos(a), 0, -Math.Sin(a)), new V3(0, 1, 0), new V3(Math.Sin(a), 0, Math.Cos(a)) };
+        var corners = new System.Collections.Generic.List<V3>();
+        for (var i = 0; i < 8; i++)
+        {
+            var x = (i & 1) == 0 ? min.X : max.X;
+            var y = (i & 2) == 0 ? min.Y : max.Y;
+            var z = (i & 4) == 0 ? min.Z : max.Z;
+            corners.Add(x * axes[0] + y * axes[1] + z * axes[2]);
+        }
+        return new ModelFrame(axes, new[] { max.X - min.X, max.Y - min.Y, max.Z - min.Z }, 1, corners);
+    }
+
+    private static void Test_Fit_TiltedModelUsesTheMeshAxes()
+    {
+        var frame = Tilted(21, new V3(-0.15, -0.035, -0.75), new V3(0.15, 0.035, 2.14));
+        var a = 21 * Math.PI / 180;
+        Near(new V3(Math.Sin(a), 0, Math.Cos(a)), frame.Unit(0), "length runs along the tilted shaft");
+        Near(2.89, frame.Size(0), "the shaft's real length");
+        Near(0.30, frame.Size(1), "the head's real width, not the tilted box's");
+    }
+
+    private static void Test_Fit_StaysOnATiltedShaft()
+    {
+        var gold = Tilted(19, new V3(-0.22, -0.045, -0.49), new V3(0.22, 0.045, 2.07));
+        var blackMetal = Tilted(21, new V3(-0.15, -0.035, -0.75), new V3(0.15, 0.035, 2.14));
+        var fit = new Fit(gold, blackMetal, 0.55, 0.40, null);
+        // a point in the middle of the gold shaft, 60 % along it
+        var p = gold.Coordinate(0, 0.60) * gold.Unit(0) + gold.Coordinate(1, 0.5) * gold.Unit(1) + gold.Coordinate(2, 0.5) * gold.Unit(2);
+        var q = fit.Point(p);
+        Near(0.5, blackMetal.Fraction(q, 1), "still in the middle of the width");
+        Near(0.5, blackMetal.Fraction(q, 2), "still in the middle of the thickness");
+        Near(0.40 + 0.05 * 0.6 / 0.45, blackMetal.Fraction(q, 0), "business end onto business end along the shaft");
     }
 }

@@ -102,9 +102,8 @@ namespace WeaponAuras
             if (kind == Kind.None) return;
             var fix = Fixes.For(prefab.name, Current);
             var donor = EffectKit.DonorFor(Current, fix != null && fix.DonorKind != Kind.None ? fix.DonorKind : kind);
-            if (donor == null || !EffectKit.ModelBox(model, out var box)) return;
-            var fit = new Fit(donor.Frame, new ModelFrame(box, WeaponKinds.HeadSign(kind)),
-                WeaponKinds.GameEffectStart(donor.Kind), WeaponKinds.EffectStart(kind), fix);
+            if (donor == null || !EffectKit.ModelFrameOf(model, kind, out var frame)) return;
+            var fit = new Fit(donor.Frame, frame, WeaponKinds.GameEffectStart(donor.Kind), WeaponKinds.EffectStart(kind), fix);
             // The copies wake up only once they're fitted: LightFlicker keeps the position it wakes up at and puts the
             // light back there every frame, and world-space particles would start at the unfitted spot.
             var container = new GameObject(EffectKit.Container);

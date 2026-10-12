@@ -17,9 +17,10 @@ systems and a point light, no mesh references), so they can be copied onto any o
 - `VisEquipment.AttachItem` postfix: for the local player only, puts a `WeaponAuras_look` container under the new
   model with fitted copies of the current look's donor effects (the variant of the same weapon kind, or the closest
   kind). The donor prefabs are never changed.
-- The fit measures both models (the box around their meshes): length, width and thickness keep their fractions, the
-  copies turn with the model, and only the emitter shapes and rates stretch (transform scales stay, since some systems
-  scale their particles with their parents).
+- The fit measures both models along their largest mesh's own axes (atgeirs, bows, knives and axes sit turned inside
+  their models): the donor's business end (from where its blade or head starts to the tip) lands on the target's,
+  width and thickness keep their fractions, the copies turn with the model, and only the emitter shapes and rates
+  stretch (transform scales stay, since some systems scale their particles with their parents).
 - The key (default L, BepInEx setting) steps Plain → Frostfire → Thunderblood → Bleeding → Storming → Primal →
   Dyrnwyn → Frostner → Plain, shows the name as a centre message and re-dresses the models already equipped.
 - `KeyHints.UpdateHints` postfix: a "Change look" row, cloned from the game's Block row.
