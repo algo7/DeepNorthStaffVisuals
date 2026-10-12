@@ -132,6 +132,22 @@ namespace WeaponAuras
             return true;
         }
 
+        /// <summary>
+        /// Particles can come off the model's main mesh: it's readable, or the model's own upgrade glow emits from it (the
+        /// game then keeps its data in memory although the mesh isn't marked readable; true for every game weapon).
+        /// </summary>
+        public static bool CanEmitFrom(Transform model, MeshFilter main)
+        {
+            var mesh = main != null ? main.sharedMesh : null;
+            if (mesh == null) return false;
+            if (mesh.isReadable) return true;
+            var glow = model.Find("UpgraderGlow");
+            if (glow == null) return false;
+            foreach (var system in glow.GetComponentsInChildren<ParticleSystem>(true))
+                if (system.shape.mesh == mesh) return true;
+            return false;
+        }
+
         /// <summary>Inside the upgrade glow, the swing trail or our container (between t and the model).</summary>
         private static bool IsSkipped(Transform t, Transform model)
         {
