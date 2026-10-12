@@ -140,6 +140,32 @@ namespace WeaponAuras
             return Plain;
         }
 
+        /// <summary>The key of a staff's look in its item notes (ItemData.m_customData). Changing it loses every saved look.</summary>
+        public const string NoteKey = "WeaponAuras_look";
+
+        /// <summary>The look in a staff's notes: no note, or a name this version doesn't know (a newer look), is Plain.</summary>
+        public static string FromNote(IDictionary<string, string> notes) =>
+            notes != null && notes.TryGetValue(NoteKey, out var look) && Array.IndexOf(Order, look) >= 0 ? look : Plain;
+
+        /// <summary>Puts a look in a staff's notes; Plain (or a name this version doesn't know) removes the note.</summary>
+        public static void SetNote(IDictionary<string, string> notes, string look)
+        {
+            if (Array.IndexOf(Order, look) >= 0) notes[NoteKey] = look;
+            else notes.Remove(NoteKey);
+        }
+
+        /// <summary>What the key does to a staff: its note moves to the next available look (see <see cref="Next"/>), returned.</summary>
+        public static string StepNote(IDictionary<string, string> notes, Func<string, bool> isAvailable)
+        {
+            var look = Next(FromNote(notes), isAvailable);
+            SetNote(notes, look);
+            return look;
+        }
+
+        /// <summary>The tooltip's last line for a staff with a look, in the game's tooltip style; empty for Plain.</summary>
+        public static string TooltipLine(string look) =>
+            Array.IndexOf(Order, look) >= 0 ? $"\nLook: <color=orange>{look}</color>" : "";
+
         /// <summary>
         /// The look after <paramref name="current"/> whose donors can be found (<paramref name="isAvailable"/>); after the
         /// last, or with none available, Plain. Plain or an unknown look starts from the first.

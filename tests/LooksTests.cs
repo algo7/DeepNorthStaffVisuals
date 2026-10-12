@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using WeaponAuras;
 
@@ -108,5 +109,54 @@ internal static partial class Tests
         Eq(Looks.Plain, Looks.FromCode(12345), "a code this version doesn't know → Plain");
         Eq(Looks.Order.Length, Looks.Order.Select(Looks.Code).Distinct().Count(), "every look has its own code");
         False(Looks.Order.Any(l => Looks.Code(l) == 0), "no look shares Plain's 0");
+    }
+
+    private static void Test_Looks_NoteKeyNeverChanges()
+    {
+        // Every saved staff's look is under this key: changing it makes every staff Plain again.
+        Eq("WeaponAuras_look", Looks.NoteKey, "note key");
+    }
+
+    private static void Test_Looks_NoteReadsTheLook()
+    {
+        Eq("Storming", Looks.FromNote(new Dictionary<string, string> { ["WeaponAuras_look"] = "Storming" }), "a look");
+        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string>()), "no note");
+        Eq(Looks.Plain, Looks.FromNote(null), "no notes at all");
+        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string> { ["WeaponAuras_look"] = "Glitter" }), "a look this version doesn't know");
+        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string> { ["WeaponAuras_look"] = "Plain" }), "Plain written out");
+    }
+
+    private static void Test_Looks_NoteWritesTheLook()
+    {
+        var notes = new Dictionary<string, string> { ["SomeOtherMod"] = "x" };
+        Looks.SetNote(notes, "Frostfire");
+        Eq("Frostfire", notes["WeaponAuras_look"], "set");
+        Looks.SetNote(notes, "Primal");
+        Eq("Primal", notes["WeaponAuras_look"], "changed");
+        Looks.SetNote(notes, Looks.Plain);
+        False(notes.ContainsKey("WeaponAuras_look"), "Plain removes the note");
+        Looks.SetNote(notes, "Glitter");
+        False(notes.ContainsKey("WeaponAuras_look"), "an unknown look writes nothing");
+        Eq("x", notes["SomeOtherMod"], "other notes untouched");
+    }
+
+    private static void Test_Looks_KeyStepsTheNote()
+    {
+        var notes = new Dictionary<string, string>();
+        Eq("Frostfire", Looks.StepNote(notes, _ => true), "Plain → Frostfire");
+        Eq("Frostfire", notes["WeaponAuras_look"], "written");
+        Eq("Bleeding", Looks.StepNote(notes, l => l != "Thunderblood"), "an unavailable look is skipped");
+        notes["WeaponAuras_look"] = "Glitter";
+        Eq("Frostfire", Looks.StepNote(notes, _ => true), "a look this version doesn't know → the first");
+        notes["WeaponAuras_look"] = "Frostner";
+        Eq(Looks.Plain, Looks.StepNote(notes, _ => true), "after the last → Plain");
+        False(notes.ContainsKey("WeaponAuras_look"), "Plain leaves no note");
+    }
+
+    private static void Test_Looks_TooltipLine()
+    {
+        Eq("\nLook: <color=orange>Frostfire</color>", Looks.TooltipLine("Frostfire"), "a look");
+        Eq("", Looks.TooltipLine(Looks.Plain), "Plain");
+        Eq("", Looks.TooltipLine("Glitter"), "unknown");
     }
 }
