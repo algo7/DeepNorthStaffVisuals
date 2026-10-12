@@ -1,11 +1,16 @@
 # DeepNorthStaffVisuals
 
-A client-side [BepInEx](https://github.com/BepInEx/BepInEx) mod for Valheim: the game's weapon effects (Frostfire
+[![CI](https://github.com/algo7/DeepNorthStaffVisuals/actions/workflows/ci.yml/badge.svg)](https://github.com/algo7/DeepNorthStaffVisuals/actions/workflows/ci.yml)
+[![Thunderstore](https://img.shields.io/badge/Thunderstore-DeepNorthStaffVisuals-blue)](https://thunderstore.io/c/valheim/p/Algo7/DeepNorthStaffVisuals/)
+[![Hexium](https://img.shields.io/badge/Hexium-DeepNorthStaffVisuals-purple)](https://valheim.hexium.gg/mods/Algo7/DeepNorthStaffVisuals)
+
+A client-side [BepInEx](https://github.com/BepInEx/BepInEx) mod for Valheim: the game's own visual effects (Frostfire
 flames, Thunderblood lightning, the Ashlands Bleeding / Storming / Primal effects, Dyrnwyn's fire, Frostner's frost) on
 the Deep North staffs Echo Spike and Lightning Strike, which have none. Visual only; friends with the mod see your
 look, everyone else the plain staff.
 
-What it does for players is in [package/README.md](package/README.md). Changes: [CHANGELOG.md](CHANGELOG.md).
+What it does for players is in [package/README.md](package/README.md), which is also the mod's Thunderstore and
+Hexium page. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 Made with AI assistance.
 
@@ -42,10 +47,16 @@ Needs the .NET SDK (8+) and the game's DLLs (a local Valheim install, or the ded
 ```sh
 make build      # bin/Release/DeepNorthStaffVisuals.dll
 make test       # unit tests: looks, weapon kinds, the fit math, and the game members the patches use
-make package    # Algo7-DeepNorthStaffVisuals-<version>.zip for r2modman's "Import local mod"
+make package    # Algo7-DeepNorthStaffVisuals-<version>.zip for a mod manager's local import
 ```
 
-The version comes from the git tag (MinVer); untagged builds are 0.1.0.
+The version comes from the git tag (MinVer).
+
+## CI / CD
+
+CI builds and tests against the free dedicated server's DLLs (`.github/scripts/valheim-managed.sh`). A `vX.Y.Z` tag
+with a matching `## X.Y.Z` section in `CHANGELOG.md` releases to GitHub, Thunderstore and Hexium after manual
+approval.
 
 ## Layout
 
@@ -58,7 +69,7 @@ The version comes from the git tag (MinVer); untagged builds are 0.1.0.
 | `src/ShowPatches.cs` | Item stands, dropped staffs, the tooltip line |
 | `src/HintPatches.cs` | The key hint |
 | `tests/` | Unit tests (`make test`) |
-| `package/` | Mod page and icon |
+| `package/` | Mod page (Thunderstore and Hexium) and icon |
 
 ## License
 
