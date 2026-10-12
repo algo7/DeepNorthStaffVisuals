@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <!-- DeepNorthStaffVisuals test-build icon (placeholder): a plain diagonal sword in Frostfire blue (#7fd8ff) on the round wooden
-       shield of the author's other mod icons. Rendered to icon.png with cairosvg (1024 px, then LANCZOS down to 256). -->
+  <!-- DeepNorthStaffVisuals icon, vector part: the round wooden shield of the author's other mod icons (#frame).
+       icon.png puts Echo Spike (StaffOrbofAhri) and Lightning Strike (StaffThunderBlood) on it, side by side and standing
+       upright, drawn from the game's own 3D models and textures, wearing Thunderblood (red) and Storming (blue): the
+       crackle web the game paints behind its Thunderblood weapon icons, recoloured blue for Storming. Rendered at 1024 px,
+       then LANCZOS down to 256. -->
   <defs>
     <clipPath id="wood"><circle cx="128" cy="128" r="96"/></clipPath>
     <radialGradient id="shade" cx="0.5" cy="0.5" r="0.5">
@@ -8,6 +11,7 @@
       <stop offset="1" stop-color="#000" stop-opacity="0.35"/>
     </radialGradient>
   </defs>
+  <g id="frame">
   <rect width="256" height="256" rx="44" fill="#1c2128"/>
   <circle cx="128" cy="128" r="108" fill="#808c98"/>
   <circle cx="128" cy="128" r="96" fill="#704c2e"/>
@@ -15,10 +19,5 @@
     <path d="M 48 20 V 236 M 72 20 V 236 M 96 20 V 236 M 120 20 V 236 M 144 20 V 236 M 168 20 V 236 M 192 20 V 236 M 216 20 V 236"/>
   </g>
   <circle cx="128" cy="128" r="96" fill="url(#shade)"/>
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <g id="sword"><path d="M 104 152 L 176 80 L 182 74 M 86 134 L 122 170 M 104 152 L 80 176"/><circle cx="74" cy="182" r="7"/></g>
-    <use href="#sword" stroke="#7fd8ff" stroke-width="26" stroke-opacity="0.12"/>
-    <use href="#sword" stroke="#7fd8ff" stroke-width="18" stroke-opacity="0.22"/>
-    <use href="#sword" stroke="#7fd8ff" stroke-width="9"/>
   </g>
 </svg>
