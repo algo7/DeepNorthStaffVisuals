@@ -176,9 +176,13 @@ namespace WeaponAuras
             if (MessageHud.instance != null) MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, Current, log: false);
         }
 
-        /// <summary>The player has a weapon model that can take a look: in a hand, or (handsOnly false) also on the back.</summary>
+        /// <summary>
+        /// The player has a weapon model that can take a look: in a hand, or (handsOnly false) also on the back. False while
+        /// the per-frame check is off (looks can't change then), so the key does nothing and the hint hides.
+        /// </summary>
         internal static bool HasLookable(bool handsOnly)
         {
+            if (s_updateOff) return false;
             var vis = LocalVisEquipment();
             if (vis == null || ObjectDB.instance == null) return false;
             for (var i = 0; i < (handsOnly ? 2 : s_models.Length); i++)
