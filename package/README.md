@@ -22,7 +22,7 @@ Available effects:
 ## How to Use
 
 - Equip a staff and press **L** to change its look. Each press shows the next one, then back to plain.
-- Works on Echo Spike and Lightning Strike.
+- Works on Echo Spike and Lightning Strike only.
 - Each staff keeps its look: in chests, on item stands and armor stands, and on the ground.
 - Upgrading gives you a new, plain staff. Press **L** to pick its look again.
 
