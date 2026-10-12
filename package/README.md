@@ -37,7 +37,8 @@ Client-side only. Friends who also have the mod see your looks, and you see thei
 - Built and tested for Valheim 1.0 (Deep North), on Linux, with no OS-specific code.
 - It only adds effects to those two staffs, so it shouldn't clash with other mods, except ones that also change how they
   look.
-- **L** taken by another mod? Change the key in the mod's config file (`BepInEx/config/algo7.deepnorthstaffvisuals.cfg`).
+- **L** taken by another mod? Change **Change look key** in your mod manager's config editor (file
+  `algo7.deepnorthstaffvisuals.cfg`). Installed by hand? The file is in `<Valheim folder>/BepInEx/config/`.
 
 ## Uninstalling
 
