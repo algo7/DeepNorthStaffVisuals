@@ -60,7 +60,7 @@ namespace WeaponAuras
             if (item == null) return Kind.None;
             var shared = item.m_itemData.m_shared;
             var kind = WeaponKinds.KindOf(shared.m_itemType, shared.m_skillType, prefab.name);
-            if (kind == Kind.None) return Kind.None;
+            if (!WeaponKinds.CanTakeLook(kind)) return Kind.None;
             var held = HeldModel(prefab.transform);
             if (held == null || held.name != "attach") return Kind.None; // fitted to the body (fist weapons, Berserkir axes)
             if (HasOwnEffects(held)) return Kind.None;

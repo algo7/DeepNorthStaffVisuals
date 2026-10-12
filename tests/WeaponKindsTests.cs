@@ -58,4 +58,11 @@ internal static partial class Tests
             Eq(kind == Kind.Atgeir ? 0.55 : start, WeaponKinds.GameEffectStart(kind), $"{kind}: the game's own variants start here");
         }
     }
+
+    private static void Test_Kinds_OnlyStaffsTakeLooks()
+    {
+        True(WeaponKinds.CanTakeLook(Kind.Staff), "staffs take looks");
+        foreach (Kind kind in System.Enum.GetValues(typeof(Kind)))
+            if (kind != Kind.Staff) False(WeaponKinds.CanTakeLook(kind), $"{kind} doesn't (glowing effects are the game's late-game reward)");
+    }
 }
