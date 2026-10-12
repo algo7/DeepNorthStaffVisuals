@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace WeaponAuras
@@ -6,7 +7,8 @@ namespace WeaponAuras
     /// Copies one donor effect part under a container and fits it: every object moves to the same place relative to the new
     /// weapon (Fit.Point) and turns with it (Fit.Rotate); transform scales stay as the donor has them (some systems grow their
     /// particles with their parents' scale), only the emitter shapes stretch. Emitters that follow the weapon
-    /// (Looks.FollowsWeapon) come off the weapon's surface instead, when it has one to give.
+    /// (Looks.FollowsWeapon) come off the weapon's surface instead, when it has one to give; ring emitters
+    /// (Looks.SpreadsAlongWeapon) repeat along its length.
     /// </summary>
     internal static class Copier
     {
@@ -35,14 +37,47 @@ namespace WeaponAuras
 
             var originalSystems = part.GetComponentsInChildren<ParticleSystem>(true);
             var copiedSystems = copy.GetComponentsInChildren<ParticleSystem>(true);
+            var rings = new List<ParticleSystem>();
             for (var i = 0; i < originalSystems.Length && i < copiedSystems.Length; i++)
             {
-                if (surface != null && Looks.FollowsWeapon(originalSystems[i].gameObject.name))
+                var name = originalSystems[i].gameObject.name;
+                if (surface != null && Looks.FollowsWeapon(name))
                     Trace(copiedSystems[i], surface, fit);
                 else
                     Stretch(copiedSystems[i], fromDonorRotation * originalSystems[i].transform.rotation, fit);
                 var emission = copiedSystems[i].emission;
-                emission.rateOverTimeMultiplier *= (float)rateBoost;
+                if (Looks.SpreadsAlongWeapon(name))
+                {
+                    // each ring at the game's own rate: more rings are already more of it
+                    emission.rateOverTimeMultiplier = originalSystems[i].emission.rateOverTimeMultiplier;
+                    rings.Add(copiedSystems[i]);
+                }
+                else
+                {
+                    emission.rateOverTimeMultiplier *= (float)rateBoost;
+                }
+            }
+            // After the pairing loops: the clones change the copy's hierarchy.
+            foreach (var ring in rings) Spread(ring, container, fit);
+        }
+
+        /// <summary>
+        /// Repeats a ring emitter along the weapon's length (Fit.RingFractions), each copy turned like the fitted one.
+        /// </summary>
+        private static void Spread(ParticleSystem ring, Transform container, Fit fit)
+        {
+            var t = ring.transform;
+            var axis = ToUnity(fit.Target.Unit(0));
+            var fitted = container.InverseTransformPoint(t.position);
+            var length = fit.Target.Size(0);
+            var at = fit.Target.Fraction(FromUnity(fitted), 0);
+            var rotation = t.rotation;
+            var fractions = Fit.RingFractions(length);
+            for (var i = 0; i < fractions.Count; i++)
+            {
+                var copy = i == 0 ? t : Object.Instantiate(t.gameObject, t.parent, false).transform;
+                copy.position = container.TransformPoint(fitted + axis * (float)((fractions[i] - at) * length));
+                copy.rotation = rotation;
             }
         }
 
@@ -62,6 +97,10 @@ namespace WeaponAuras
             shape.scale = Vector3.one;
             var emission = system.emission;
             emission.rateOverTimeMultiplier *= (float)fit.TraceRateFactor;
+            // Spawned straight in the world, where the mesh is: a system simulating in its own space would convert the
+            // positions through its parents' scale, which differs on the back joints.
+            var main = system.main;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
         }
 
         /// <summary>Stretches an emitter's shape (and its offset) along its own axes; rate follows the length.</summary>

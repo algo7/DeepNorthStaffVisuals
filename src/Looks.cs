@@ -93,31 +93,36 @@ namespace WeaponAuras
         }
 
         /// <summary>
-        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, Bleeding's drips
-        /// and swirls), by name; " (1)"-style copies count as the same. The swirls still circle the shaft: they orbit their
-        /// system's own z axis, which the fit lays along the weapon. Lightning bolts, sparks, splats and flares keep their own
-        /// shapes.
+        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, Bleeding's
+        /// drips), by name; " (1)"-style copies count as the same. Lightning bolts, sparks, splats and flares keep their own
+        /// shapes; Bleeding's swirls repeat along the weapon instead (<see cref="SpreadsAlongWeapon"/>).
         /// </summary>
         private static readonly string[] s_followers =
+            { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" };
+
+        /// <summary>
+        /// Emitters copied as several rings along the weapon (Fit.RingFractions): Bleeding's swirls circle the shaft around
+        /// their own centre, so they can't start from the surface (they'd circle far from it).
+        /// </summary>
+        private static readonly string[] s_spreaders = { "Swirls" };
+
+        public static bool FollowsWeapon(string emitterName) => Array.IndexOf(s_followers, BaseName(emitterName)) >= 0;
+
+        public static bool SpreadsAlongWeapon(string emitterName) => Array.IndexOf(s_spreaders, BaseName(emitterName)) >= 0;
+
+        /// <summary>"Swirls (1)" → "Swirls"; null or empty → "".</summary>
+        private static string BaseName(string emitterName)
         {
-            "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip",
-            "Swirls",
-        };
+            if (string.IsNullOrEmpty(emitterName)) return "";
+            var copy = emitterName.LastIndexOf(" (", StringComparison.Ordinal);
+            return copy > 0 && emitterName.EndsWith(")", StringComparison.Ordinal) ? emitterName.Substring(0, copy) : emitterName;
+        }
 
         /// <summary>
         /// Extra particle rate for a look: Bleeding (swirls and drips only, no light; on the game's own weapons most of it
         /// is the red painted blade, which can't be copied) gets 2.5x so it shows. 1 for every other look.
         /// </summary>
         public static double RateBoost(string look) => look == "Bleeding" ? 2.5 : 1;
-
-        public static bool FollowsWeapon(string emitterName)
-        {
-            if (string.IsNullOrEmpty(emitterName)) return false;
-            var name = emitterName;
-            var copy = name.LastIndexOf(" (", StringComparison.Ordinal);
-            if (copy > 0 && name.EndsWith(")", StringComparison.Ordinal)) name = name.Substring(0, copy);
-            return Array.IndexOf(s_followers, name) >= 0;
-        }
 
         /// <summary>
         /// The look after <paramref name="current"/> whose donors can be found (<paramref name="isAvailable"/>); after the

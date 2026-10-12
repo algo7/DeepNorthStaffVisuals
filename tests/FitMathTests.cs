@@ -208,4 +208,16 @@ internal static partial class Tests
         var dagger = new ModelFrame(new Box(new V3(-0.07, -0.02, -0.1), new V3(0.07, 0.02, 0.6)), 1);
         Near(0.7 / (0.79 * 1.4), new Fit(sword, dagger, 0.21, 0.26, null).TraceRateFactor, "a dagger: fewer");
     }
+
+    private static void Test_Fit_RingsAlongTheWeapon()
+    {
+        var staff = Fit.RingFractions(2.33);
+        Eq(6, staff.Count, "Lightning Strike (2.33 m): a ring about every 40 cm");
+        Near(0.08, staff[0], "from just above the bottom");
+        Near(0.95, staff[staff.Count - 1], "to just below the top");
+        for (var i = 1; i < staff.Count; i++) Near(0.87 / 5, staff[i] - staff[i - 1], "evenly spaced");
+        Eq(3, Fit.RingFractions(1.13).Count, "Echo Spike (1.13 m): three");
+        Eq(1, Fit.RingFractions(0.2).Count, "a tiny model: one ring");
+        Near(0.515, Fit.RingFractions(0.2)[0], "in the middle");
+    }
 }

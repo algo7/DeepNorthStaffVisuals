@@ -193,6 +193,24 @@ namespace WeaponAuras
 
         private static double Clamp(double v, double min, double max) => v < min ? min : v > max ? max : v;
 
+        /// <summary>
+        /// Where along a weapon of this length (m) to put repeated rings: one about every <paramref name="spacing"/> m from
+        /// <paramref name="from"/> to <paramref name="to"/> (fractions of the length), evenly spaced; at least one, in the
+        /// middle.
+        /// </summary>
+        public static List<double> RingFractions(double length, double spacing = 0.4, double from = 0.08, double to = 0.95)
+        {
+            var count = Math.Max(1, (int)Math.Round((to - from) * length / spacing) + 1);
+            var fractions = new List<double>();
+            if (count == 1)
+            {
+                fractions.Add((from + to) / 2);
+                return fractions;
+            }
+            for (var i = 0; i < count; i++) fractions.Add(from + i * (to - from) / (count - 1));
+            return fractions;
+        }
+
         /// <summary>A donor-space point → the target-space point (business end onto business end, plus the fix's shift).</summary>
         public V3 Point(V3 p)
         {

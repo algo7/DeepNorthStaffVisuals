@@ -63,9 +63,9 @@ internal static partial class Tests
     private static void Test_Looks_WhichEmittersFollowTheWeapon()
     {
         foreach (var name in new[] { "flames", "flames (1)", "fx_Torch_Basic", "fx_Torch_Basic (1)", "Burny vfx", "Clouds", "Spores",
-                     "Spores (1)", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip", "Swirls", "Swirls (1)" })
+                     "Spores (1)", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" })
             True(Looks.FollowsWeapon(name), $"{name} comes off the weapon's surface");
-        foreach (var name in new[] { "flare", "Lightning", "Lightning (3)", "Sparcs", "Splats", "Point light", "" })
+        foreach (var name in new[] { "flare", "Lightning", "Lightning (3)", "Sparcs", "Splats", "Swirls", "Point light", "" })
             False(Looks.FollowsWeapon(name), $"{name} keeps its own shape");
     }
 
@@ -74,5 +74,13 @@ internal static partial class Tests
         Eq(2.5, Looks.RateBoost("Bleeding"), "Bleeding: 2.5x the swirls and drips (it has no light and little else)");
         foreach (var look in new[] { "Frostfire", "Thunderblood", "Storming", "Primal", "Dyrnwyn", "Frostner", Looks.Plain, "NoSuchLook" })
             Eq(1.0, Looks.RateBoost(look), $"{look}: the game's rate");
+    }
+
+    private static void Test_Looks_SwirlsSpreadAlongTheWeapon()
+    {
+        True(Looks.SpreadsAlongWeapon("Swirls"), "Bleeding's swirl rings repeat along the weapon");
+        True(Looks.SpreadsAlongWeapon("Swirls (1)"), "copies count");
+        foreach (var name in new[] { "flames", "blood drip", "Clouds", "Lightning", "" })
+            False(Looks.SpreadsAlongWeapon(name), name);
     }
 }
