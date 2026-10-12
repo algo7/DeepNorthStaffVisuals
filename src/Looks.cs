@@ -94,17 +94,18 @@ namespace WeaponAuras
 
         /// <summary>
         /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, Bleeding's
-        /// drips), by name; " (1)"-style copies count as the same. Lightning bolts, sparks, splats and flares keep their own
-        /// shapes; Bleeding's swirls repeat along the weapon instead (<see cref="SpreadsAlongWeapon"/>).
+        /// drips), by name; " (1)"-style copies count as the same. Sparks, splats and flares keep their own shapes; Bleeding's
+        /// swirls and the lightning repeat along the weapon instead (<see cref="SpreadsAlongWeapon"/>).
         /// </summary>
         private static readonly string[] s_followers =
             { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" };
 
         /// <summary>
-        /// Emitters copied as several rings along the weapon (Fit.RingFractions): Bleeding's swirls circle the shaft around
-        /// their own centre, so they can't start from the surface (they'd circle far from it).
+        /// Emitters copied several times along the weapon (Fit.RingFractions): Bleeding's swirls circle the shaft around
+        /// their own centre, so they can't start from the surface (they'd circle far from it); Storming's and Thunderblood's
+        /// lightning is fired from a cone along the shaft and pulled in towards it.
         /// </summary>
-        private static readonly string[] s_spreaders = { "Swirls" };
+        private static readonly string[] s_spreaders = { "Swirls", "Lightning" };
 
         public static bool FollowsWeapon(string emitterName) => Array.IndexOf(s_followers, BaseName(emitterName)) >= 0;
 

@@ -194,6 +194,13 @@ namespace WeaponAuras
         private static double Clamp(double v, double min, double max) => v < min ? min : v > max ? max : v;
 
         /// <summary>
+        /// How far an emitter's particles travel along its own axis before they fade: their start speed when it's fired
+        /// along that axis (cone shapes), plus their velocity along it, times their lifetime.
+        /// </summary>
+        public static double Drift(bool firedAlongAxis, double startSpeed, double velocityAlongAxis, double lifetime) =>
+            ((firedAlongAxis ? Math.Abs(startSpeed) : 0) + Math.Abs(velocityAlongAxis)) * lifetime;
+
+        /// <summary>
         /// Where along a weapon of this length (m) to put repeated rings: one about every <paramref name="spacing"/> m from
         /// <paramref name="from"/> to <paramref name="to"/> (fractions of the length), evenly spaced; at least one, in the
         /// middle. The rings stop early enough that what they emit, drifting <paramref name="drift"/> m towards the tip,

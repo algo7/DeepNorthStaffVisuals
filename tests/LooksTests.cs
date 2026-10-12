@@ -80,7 +80,9 @@ internal static partial class Tests
     {
         True(Looks.SpreadsAlongWeapon("Swirls"), "Bleeding's swirl rings repeat along the weapon");
         True(Looks.SpreadsAlongWeapon("Swirls (1)"), "copies count");
-        foreach (var name in new[] { "flames", "blood drip", "Clouds", "Lightning", "" })
+        True(Looks.SpreadsAlongWeapon("Lightning"), "Storming / Thunderblood bolts repeat along the weapon");
+        True(Looks.SpreadsAlongWeapon("Lightning (4)"), "copies count");
+        foreach (var name in new[] { "flames", "blood drip", "Clouds", "Sparcs", "Splats", "" })
             False(Looks.SpreadsAlongWeapon(name), name);
     }
 }

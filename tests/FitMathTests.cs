@@ -233,4 +233,12 @@ internal static partial class Tests
         Near(0.08, Fit.RingFractions(0.5, 0.87)[0], "at the bottom");
         Eq(Fit.RingFractions(2.33).Count, Fit.RingFractions(2.33, 0).Count, "no drift: up to 95 % as before");
     }
+
+    private static void Test_Fit_DriftAlongTheAxis()
+    {
+        Near(0.67 * 1.3, Fit.Drift(false, 0, 0.67, 1.3), "swirls: their velocity along the axis");
+        Near(1.0 * 1.75, Fit.Drift(true, 1.0, 0, 1.75), "Storming's bolts: fired from a cone along the axis");
+        Near((0.5 + 0.2) * 2.5, Fit.Drift(true, 0.5, -0.2, 2.5), "both add up (as distances)");
+        Near(0, Fit.Drift(false, 10, 0, 0.3), "splats burst sideways from a hemisphere: no drift along the axis");
+    }
 }
