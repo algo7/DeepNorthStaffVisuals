@@ -108,4 +108,23 @@ internal static partial class Tests
         Eq("HandRight,HandLeft,BackRight,BackLeft",
             string.Join(",", new[] { VisSlot.HandRight, VisSlot.HandLeft, VisSlot.BackRight, VisSlot.BackLeft }), "VisSlot names");
     }
+
+    private static void Test_Game_TheItemStand()
+    {
+        Eq(4, Method(typeof(ItemStand), "SetVisualItem").GetParameters().Length, "ItemStand.SetVisualItem(hash, variant, quality, orientation)");
+        Eq(0, Method(typeof(ItemStand), "UpdateVisual").GetParameters().Length, "ItemStand.UpdateVisual()");
+        Field(typeof(ItemStand), "m_visualItem", typeof(GameObject));
+        Field(typeof(ItemStand), "m_nview", typeof(ZNetView));
+        True(typeof(ZDOVars).GetField("s_item", BindingFlags.Public | BindingFlags.Static) != null, "ZDOVars.s_item");
+    }
+
+    private static void Test_Game_TheGroundAndTheTooltip()
+    {
+        Eq(0, Method(typeof(ItemDrop), "Start").GetParameters().Length, "ItemDrop.Start()");
+        var tooltip = typeof(ItemDrop.ItemData).GetMethod("GetTooltip",
+            new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool), typeof(float), typeof(int), typeof(bool) });
+        True(tooltip != null && tooltip.IsStatic && tooltip.ReturnType == typeof(string), "static string ItemData.GetTooltip(ItemData, int, bool, float, int, bool)");
+        Param(tooltip, "item", typeof(ItemDrop.ItemData));
+        Param(tooltip, "crafting", typeof(bool));
+    }
 }

@@ -54,6 +54,9 @@ namespace WeaponAuras
                 return;
             }
             if (!TryPatch(harmony, typeof(HintPatches), "key hint hook")) Log.LogWarning("No 'Change look' key hint (the key still works)");
+            if (!TryPatch(harmony, typeof(StandPatches), "item stand hook")) Log.LogWarning("No looks on item stands (the rest works)");
+            if (!TryPatch(harmony, typeof(GroundPatches), "dropped item hook")) Log.LogWarning("No looks on dropped staffs (the rest works)");
+            if (!TryPatch(harmony, typeof(TooltipPatches), "tooltip hook")) Log.LogWarning("No look line in tooltips (the rest works)");
             SceneManager.sceneLoaded += OnSceneLoaded;
             s_running = true;
             Log.LogInfo($"{Name} loaded (v{PluginVersion})");
@@ -65,6 +68,7 @@ namespace WeaponAuras
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             Dresser.Reset();
+            StandPatches.Reset();
             EffectKit.Clear();
         }
 
