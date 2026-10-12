@@ -93,6 +93,23 @@ namespace WeaponAuras
         }
 
         /// <summary>
+        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost), by name;
+        /// " (1)"-style copies count as the same. Lightning bolts, sparks, splats, swirls, drips and flares keep their
+        /// own shapes.
+        /// </summary>
+        private static readonly string[] s_followers =
+            { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1" };
+
+        public static bool FollowsWeapon(string emitterName)
+        {
+            if (string.IsNullOrEmpty(emitterName)) return false;
+            var name = emitterName;
+            var copy = name.LastIndexOf(" (", StringComparison.Ordinal);
+            if (copy > 0 && name.EndsWith(")", StringComparison.Ordinal)) name = name.Substring(0, copy);
+            return Array.IndexOf(s_followers, name) >= 0;
+        }
+
+        /// <summary>
         /// The look after <paramref name="current"/> whose donors can be found (<paramref name="isAvailable"/>); after the
         /// last, or with none available, Plain. Plain or an unknown look starts from the first.
         /// </summary>

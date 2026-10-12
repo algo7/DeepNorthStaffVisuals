@@ -198,4 +198,14 @@ internal static partial class Tests
         Near(0.5, blackMetal.Fraction(q, 2), "still in the middle of the thickness");
         Near(0.40 + 0.05 * 0.6 / 0.45, blackMetal.Fraction(q, 0), "business end onto business end along the shaft");
     }
+
+    private static void Test_Fit_TracingRateFollowsTheWholeWeapon()
+    {
+        var dyrnwyn = new Fit(new ModelFrame(Dyrnwyn, 1), new ModelFrame(Atgeir, 1), 0.21, 0.40, null);
+        Near(Fit.MaxRate, dyrnwyn.TraceRateFactor, "a whole 2.8 m atgeir from a 1.35 m blade: at most twice the rate");
+        var sword = new ModelFrame(GoldSword, 1);
+        Near(1.0 / 0.79, new Fit(sword, sword, 0.21, 0.21, null).TraceRateFactor, "the whole sword, not just its blade");
+        var dagger = new ModelFrame(new Box(new V3(-0.07, -0.02, -0.1), new V3(0.07, 0.02, 0.6)), 1);
+        Near(0.7 / (0.79 * 1.4), new Fit(sword, dagger, 0.21, 0.26, null).TraceRateFactor, "a dagger: fewer");
+    }
 }

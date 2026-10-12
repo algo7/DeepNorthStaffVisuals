@@ -5,11 +5,13 @@ namespace WeaponAuras
     /// <summary>
     /// Copies one donor effect part under a container and fits it: every object moves to the same place relative to the new
     /// weapon (Fit.Point) and turns with it (Fit.Rotate); transform scales stay as the donor has them (some systems grow their
-    /// particles with their parents' scale), only the emitter shapes stretch.
+    /// particles with their parents' scale), only the emitter shapes stretch. Emitters that follow the weapon
+    /// (Looks.FollowsWeapon) come off the weapon's surface instead, when it has one to give.
     /// </summary>
     internal static class Copier
     {
-        public static void Copy(Transform part, Transform donorModel, Transform container, Fit fit)
+        /// <param name="surface">The weapon's main mesh to emit from, or null to keep every emitter's fitted shape.</param>
+        public static void Copy(Transform part, Transform donorModel, Transform container, Fit fit, MeshRenderer surface)
         {
             var copy = Object.Instantiate(part.gameObject, container, false).transform;
             var toDonor = donorModel.worldToLocalMatrix;
@@ -33,7 +35,30 @@ namespace WeaponAuras
             var originalSystems = part.GetComponentsInChildren<ParticleSystem>(true);
             var copiedSystems = copy.GetComponentsInChildren<ParticleSystem>(true);
             for (var i = 0; i < originalSystems.Length && i < copiedSystems.Length; i++)
-                Stretch(copiedSystems[i], fromDonorRotation * originalSystems[i].transform.rotation, fit);
+            {
+                if (surface != null && Looks.FollowsWeapon(originalSystems[i].gameObject.name))
+                    Trace(copiedSystems[i], surface, fit);
+                else
+                    Stretch(copiedSystems[i], fromDonorRotation * originalSystems[i].transform.rotation, fit);
+            }
+        }
+
+        /// <summary>
+        /// The emitter comes off the edges of the weapon's mesh (as the game's upgrade glow does), in the look's own colours;
+        /// the rate follows the whole weapon's length.
+        /// </summary>
+        private static void Trace(ParticleSystem system, MeshRenderer surface, Fit fit)
+        {
+            var shape = system.shape;
+            shape.shapeType = ParticleSystemShapeType.MeshRenderer;
+            shape.meshRenderer = surface;
+            shape.meshShapeType = ParticleSystemMeshShapeType.Edge;
+            shape.useMeshColors = false;
+            shape.position = Vector3.zero;
+            shape.rotation = Vector3.zero;
+            shape.scale = Vector3.one;
+            var emission = system.emission;
+            emission.rateOverTimeMultiplier *= (float)fit.TraceRateFactor;
         }
 
         /// <summary>Stretches an emitter's shape (and its offset) along its own axes; rate follows the length.</summary>

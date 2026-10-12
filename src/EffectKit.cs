@@ -64,7 +64,7 @@ namespace WeaponAuras
             var held = HeldModel(prefab.transform);
             if (held == null || held.name != "attach") return Kind.None; // fitted to the body (fist weapons, Berserkir axes)
             if (HasOwnEffects(held)) return Kind.None;
-            return ModelFrameOf(held, kind, out _) ? kind : Kind.None;
+            return ModelFrameOf(held, kind, out _, out _) ? kind : Kind.None;
         }
 
         /// <summary>The model the game puts in the hand: the first child named attach or attach_skin (VisEquipment.AttachItem).</summary>
@@ -86,11 +86,13 @@ namespace WeaponAuras
 
         /// <summary>
         /// A model's frame (see <see cref="ModelFrame"/>): its largest mesh's own axes, turned so the length points to the
-        /// kind's head, and the extent of every mesh box along them, in the model's own space. False if it has no mesh.
+        /// kind's head, and the extent of every mesh box along them, in the model's own space; main = that largest mesh.
+        /// False if it has no mesh.
         /// </summary>
-        public static bool ModelFrameOf(Transform model, Kind kind, out ModelFrame frame)
+        public static bool ModelFrameOf(Transform model, Kind kind, out ModelFrame frame, out MeshFilter main)
         {
             frame = null;
+            main = null;
             var corners = new List<V3>();
             V3[] axes = null;
             double[] sizes = null;
@@ -122,6 +124,7 @@ namespace WeaponAuras
                     largest = size;
                     axes = meshAxes;
                     sizes = meshSizes;
+                    main = filter;
                 }
             }
             if (axes == null) return false;
@@ -175,7 +178,7 @@ namespace WeaponAuras
             if (item == null || model == null) return null;
             var shared = item.m_itemData.m_shared;
             var kind = WeaponKinds.KindOf(shared.m_itemType, shared.m_skillType, name);
-            if (!ModelFrameOf(model, kind, out var frame)) return null;
+            if (!ModelFrameOf(model, kind, out var frame, out _)) return null;
             var parts = new List<Transform>();
             FindParts(model, parts);
             if (parts.Count == 0) return null;

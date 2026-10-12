@@ -145,6 +145,12 @@ namespace WeaponAuras
         /// <summary>How much the donor's particle rate is multiplied: the business ends' length ratio within limits.</summary>
         public readonly double RateFactor;
 
+        /// <summary>
+        /// The rate factor for an emitter that comes off the whole weapon's surface: the target's whole length over the
+        /// donor's business end (which its emitter covered), within limits.
+        /// </summary>
+        public readonly double TraceRateFactor;
+
         /// <param name="donorStart">Where the donor's business end starts (fraction of its length from the butt).</param>
         /// <param name="targetStart">Where the target's business end starts.</param>
         public Fit(ModelFrame donor, ModelFrame target, double donorStart, double targetStart, Fix fix)
@@ -158,6 +164,8 @@ namespace WeaponAuras
             m_stretch[0] = Clamp(lengthRatio, MinLengthStretch, MaxLengthStretch) * extra;
             for (var k = 1; k < 3; k++) m_stretch[k] = Clamp(Ratio(k), MinSideStretch, MaxSideStretch) * extra;
             RateFactor = Clamp(lengthRatio, MinRate, MaxRate);
+            var donorEnd = (1 - donorStart) * donor.Size(0);
+            TraceRateFactor = donorEnd < 1e-6 ? 1 : Clamp(target.Size(0) / donorEnd, MinRate, MaxRate);
             m_shift[0] = fix?.Along ?? 0;
             m_shift[1] = fix?.Across ?? 0;
         }

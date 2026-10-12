@@ -20,7 +20,8 @@ systems and a point light, no mesh references), so they can be copied onto any o
 - The fit measures both models along their largest mesh's own axes (atgeirs, bows, knives and axes sit turned inside
   their models): the donor's business end (from where its blade or head starts to the tip) lands on the target's,
   width and thickness keep their fractions, the copies turn with the model, and only the emitter shapes and rates
-  stretch (transform scales stay, since some systems scale their particles with their parents).
+  stretch (transform scales stay, since some systems scale their particles with their parents). Flames, clouds, spores
+  and frost come off the weapon's own mesh edges instead (like the game's upgrade glow), so they follow its shape.
 - The key (default L, BepInEx setting) steps Plain → Frostfire → Thunderblood → Bleeding → Storming → Primal →
   Dyrnwyn → Frostner → Plain, shows the name as a centre message and re-dresses the models already equipped.
 - `KeyHints.UpdateHints` postfix: a "Change look" row, cloned from the game's Block row.

@@ -59,4 +59,14 @@ internal static partial class Tests
     {
         True(Fixes.For("SwordIron", "Frostfire") == null, "no fix for the iron sword");
     }
+
+    private static void Test_Looks_WhichEmittersFollowTheWeapon()
+    {
+        foreach (var name in new[] { "flames", "flames (1)", "fx_Torch_Basic", "fx_Torch_Basic (1)", "Burny vfx", "Clouds", "Spores",
+                     "Spores (1)", "Spores_World", "soft cloud", "vfx_BloodHit 1" })
+            True(Looks.FollowsWeapon(name), $"{name} comes off the weapon's surface");
+        foreach (var name in new[] { "flare", "Lightning", "Lightning (3)", "Sparcs", "Splats", "Swirls", "Swirls (1)", "blood drip",
+                     "Point light", "" })
+            False(Looks.FollowsWeapon(name), $"{name} keeps its own shape");
+    }
 }

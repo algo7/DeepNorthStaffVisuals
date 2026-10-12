@@ -102,14 +102,18 @@ namespace WeaponAuras
             if (kind == Kind.None) return;
             var fix = Fixes.For(prefab.name, Current);
             var donor = EffectKit.DonorFor(Current, fix != null && fix.DonorKind != Kind.None ? fix.DonorKind : kind);
-            if (donor == null || !EffectKit.ModelFrameOf(model, kind, out var frame)) return;
+            if (donor == null || !EffectKit.ModelFrameOf(model, kind, out var frame, out var main)) return;
             var fit = new Fit(donor.Frame, frame, WeaponKinds.GameEffectStart(donor.Kind), WeaponKinds.EffectStart(kind), fix);
+            // Flames, clouds, spores and frost come off the weapon's own surface, like the game's upgrade glow does; that
+            // needs a readable mesh (every game weapon's is), otherwise they keep their fitted shape.
+            var surface = main.GetComponent<MeshRenderer>();
+            if (surface == null || !main.sharedMesh.isReadable) surface = null;
             // The copies wake up only once they're fitted: LightFlicker keeps the position it wakes up at and puts the
             // light back there every frame, and world-space particles would start at the unfitted spot.
             var container = new GameObject(EffectKit.Container);
             container.SetActive(false);
             container.transform.SetParent(model, false);
-            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container.transform, fit);
+            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container.transform, fit, surface);
             container.SetActive(true);
         }
     }
