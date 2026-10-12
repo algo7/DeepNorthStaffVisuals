@@ -195,10 +195,11 @@ namespace WeaponAuras
 
         /// <summary>
         /// How far an emitter's particles travel along its own axis before they fade: their start speed when it's fired
-        /// along that axis (cone shapes), plus their velocity along it, times their lifetime.
+        /// along that axis (cone shapes), plus their velocity along it, plus their radial velocity (negative = pulled back
+        /// towards the emitter, as Storming's bolts are at 0.5 m/s), times their lifetime; never below 0.
         /// </summary>
-        public static double Drift(bool firedAlongAxis, double startSpeed, double velocityAlongAxis, double lifetime) =>
-            ((firedAlongAxis ? Math.Abs(startSpeed) : 0) + Math.Abs(velocityAlongAxis)) * lifetime;
+        public static double Drift(bool firedAlongAxis, double startSpeed, double velocityAlongAxis, double radial, double lifetime) =>
+            Math.Max(0, (firedAlongAxis ? Math.Abs(startSpeed) : 0) + Math.Abs(velocityAlongAxis) + radial) * lifetime;
 
         /// <summary>
         /// Where along a weapon of this length (m) to put repeated rings: one about every <paramref name="spacing"/> m from

@@ -83,14 +83,16 @@ namespace WeaponAuras
 
         /// <summary>
         /// How far a ring's particles travel along its own axis (the weapon's length) on average before they fade
-        /// (Fit.Drift). Bleeding's swirls: 0.67 m/s for 1-1.6 s; Storming's bolts: fired from a cone at 1 m/s for 1.5-2 s.
+        /// (Fit.Drift). Bleeding's swirls: 0.67 m/s for 1-1.6 s; Storming's bolts: fired from a cone at 1 m/s, pulled back at
+        /// 0.5 m/s, for 1.5-2 s.
         /// </summary>
         private static double Drift(ParticleSystem ring)
         {
             var velocity = ring.velocityOverLifetime;
             var shape = ring.shape.shapeType;
             var cone = shape == ParticleSystemShapeType.Cone || shape == ParticleSystemShapeType.ConeVolume;
-            return Fit.Drift(cone, Mean(ring.main.startSpeed), velocity.enabled ? Mean(velocity.z) : 0, Mean(ring.main.startLifetime));
+            return Fit.Drift(cone, Mean(ring.main.startSpeed), velocity.enabled ? Mean(velocity.z) : 0,
+                velocity.enabled ? Mean(velocity.radial) : 0, Mean(ring.main.startLifetime));
         }
 
         private static float Mean(ParticleSystem.MinMaxCurve curve)

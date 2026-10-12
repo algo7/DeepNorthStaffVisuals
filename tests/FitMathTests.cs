@@ -236,9 +236,11 @@ internal static partial class Tests
 
     private static void Test_Fit_DriftAlongTheAxis()
     {
-        Near(0.67 * 1.3, Fit.Drift(false, 0, 0.67, 1.3), "swirls: their velocity along the axis");
-        Near(1.0 * 1.75, Fit.Drift(true, 1.0, 0, 1.75), "Storming's bolts: fired from a cone along the axis");
-        Near((0.5 + 0.2) * 2.5, Fit.Drift(true, 0.5, -0.2, 2.5), "both add up (as distances)");
-        Near(0, Fit.Drift(false, 10, 0, 0.3), "splats burst sideways from a hemisphere: no drift along the axis");
+        Near(0.67 * 1.3, Fit.Drift(false, 0, 0.67, 0, 1.3), "swirls: their velocity along the axis");
+        Near((1.0 - 0.5) * 1.75, Fit.Drift(true, 1.0, 0, -0.5, 1.75), "Storming's bolts: fired at 1 m/s, pulled back at 0.5");
+        Near((0.5 - 0.05) * 2.5, Fit.Drift(true, 0.5, 0, -0.05, 2.5), "Thunderblood's bolts: barely pulled back");
+        Near((0.5 + 0.2) * 2.5, Fit.Drift(true, 0.5, -0.2, 0, 2.5), "speed and velocity add up (as distances)");
+        Near(0, Fit.Drift(true, 0.3, 0, -1.0, 2), "pulled back harder than fired: no drift");
+        Near(0, Fit.Drift(false, 10, 0, 0, 0.3), "splats burst sideways from a hemisphere: no drift along the axis");
     }
 }
