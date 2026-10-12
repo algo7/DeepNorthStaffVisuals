@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Runs WeaponAuras's Unity-free rules (looks, weapon kinds, the fit math) and checks the game members the patches use
+    Runs DeepNorthStaffVisuals's Unity-free rules (looks, weapon kinds, the fit math) and checks the game members the patches use
     against the game's own DLLs, outside the game. Everything that needs a live Unity engine is tested in game.
   -->
   <PropertyGroup>

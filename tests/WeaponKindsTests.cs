@@ -1,4 +1,4 @@
-using WeaponAuras;
+using DeepNorthStaffVisuals;
 using ItemType = ItemDrop.ItemData.ItemType;
 using SkillType = Skills.SkillType;
 

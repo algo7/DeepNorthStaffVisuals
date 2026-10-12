@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using HarmonyLib;
 using UnityEngine;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>
     /// A staff on an item stand wears the look noted on the stand's item: when the stand builds its model, and on the

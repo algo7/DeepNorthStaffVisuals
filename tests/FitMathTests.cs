@@ -1,5 +1,5 @@
 using System;
-using WeaponAuras;
+using DeepNorthStaffVisuals;
 
 internal static partial class Tests
 {

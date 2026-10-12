@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>WeaponAuras</AssemblyName>
-    <RootNamespace>WeaponAuras</RootNamespace>
+    <AssemblyName>DeepNorthStaffVisuals</AssemblyName>
+    <RootNamespace>DeepNorthStaffVisuals</RootNamespace>
     <!-- The version comes from the latest git tag vX.Y.Z (MinVer); untagged test builds are 0.1.0. Nothing to edit by hand. -->
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
     <!-- Thunderstore namespace / r2modman author; the package's manifest.json is generated from these (Package target). -->
     <ModAuthor>Algo7</ModAuthor>
     <ModDescription>Frostfire, Thunderblood and other weapon effects for the Deep North staffs Echo Spike and Lightning Strike: press L to change the look. Client-side, visual only.</ModDescription>
-    <ModWebsite>https://github.com/algo7/WeaponAuras</ModWebsite>
+    <ModWebsite>https://github.com/algo7/DeepNorthStaffVisuals</ModWebsite>
     <BepInExPackDependency>denikson-BepInExPack_Valheim-5.4.2351</BepInExPackDependency>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
@@ -86,7 +86,7 @@
     </PropertyGroup>
     <ItemGroup>
       <_PluginInfoLine Include="// Generated at build time from the git tag (MinVer). Do not edit." />
-      <_PluginInfoLine Include="namespace WeaponAuras { internal static class PluginInfo { public const string Version = &quot;$(ModVersion)&quot;%3B } }" />
+      <_PluginInfoLine Include="namespace DeepNorthStaffVisuals { internal static class PluginInfo { public const string Version = &quot;$(ModVersion)&quot;%3B } }" />
     </ItemGroup>
     <WriteLinesToFile File="$(_PluginInfoFile)" Lines="@(_PluginInfoLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
     <ItemGroup>

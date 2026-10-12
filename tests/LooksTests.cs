@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using WeaponAuras;
+using DeepNorthStaffVisuals;
 
 internal static partial class Tests
 {
@@ -114,29 +114,29 @@ internal static partial class Tests
     private static void Test_Looks_NoteKeyNeverChanges()
     {
         // Every saved staff's look is under this key: changing it makes every staff Plain again.
-        Eq("WeaponAuras_look", Looks.NoteKey, "note key");
+        Eq("DeepNorthStaffVisuals_look", Looks.NoteKey, "note key");
     }
 
     private static void Test_Looks_NoteReadsTheLook()
     {
-        Eq("Storming", Looks.FromNote(new Dictionary<string, string> { ["WeaponAuras_look"] = "Storming" }), "a look");
+        Eq("Storming", Looks.FromNote(new Dictionary<string, string> { ["DeepNorthStaffVisuals_look"] = "Storming" }), "a look");
         Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string>()), "no note");
         Eq(Looks.Plain, Looks.FromNote(null), "no notes at all");
-        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string> { ["WeaponAuras_look"] = "Glitter" }), "a look this version doesn't know");
-        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string> { ["WeaponAuras_look"] = "Plain" }), "Plain written out");
+        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string> { ["DeepNorthStaffVisuals_look"] = "Glitter" }), "a look this version doesn't know");
+        Eq(Looks.Plain, Looks.FromNote(new Dictionary<string, string> { ["DeepNorthStaffVisuals_look"] = "Plain" }), "Plain written out");
     }
 
     private static void Test_Looks_NoteWritesTheLook()
     {
         var notes = new Dictionary<string, string> { ["SomeOtherMod"] = "x" };
         Looks.SetNote(notes, "Frostfire");
-        Eq("Frostfire", notes["WeaponAuras_look"], "set");
+        Eq("Frostfire", notes["DeepNorthStaffVisuals_look"], "set");
         Looks.SetNote(notes, "Primal");
-        Eq("Primal", notes["WeaponAuras_look"], "changed");
+        Eq("Primal", notes["DeepNorthStaffVisuals_look"], "changed");
         Looks.SetNote(notes, Looks.Plain);
-        False(notes.ContainsKey("WeaponAuras_look"), "Plain removes the note");
+        False(notes.ContainsKey("DeepNorthStaffVisuals_look"), "Plain removes the note");
         Looks.SetNote(notes, "Glitter");
-        False(notes.ContainsKey("WeaponAuras_look"), "an unknown look writes nothing");
+        False(notes.ContainsKey("DeepNorthStaffVisuals_look"), "an unknown look writes nothing");
         Eq("x", notes["SomeOtherMod"], "other notes untouched");
     }
 
@@ -144,13 +144,13 @@ internal static partial class Tests
     {
         var notes = new Dictionary<string, string>();
         Eq("Frostfire", Looks.StepNote(notes, _ => true), "Plain → Frostfire");
-        Eq("Frostfire", notes["WeaponAuras_look"], "written");
+        Eq("Frostfire", notes["DeepNorthStaffVisuals_look"], "written");
         Eq("Bleeding", Looks.StepNote(notes, l => l != "Thunderblood"), "an unavailable look is skipped");
-        notes["WeaponAuras_look"] = "Glitter";
+        notes["DeepNorthStaffVisuals_look"] = "Glitter";
         Eq("Frostfire", Looks.StepNote(notes, _ => true), "a look this version doesn't know → the first");
-        notes["WeaponAuras_look"] = "Frostner";
+        notes["DeepNorthStaffVisuals_look"] = "Frostner";
         Eq(Looks.Plain, Looks.StepNote(notes, _ => true), "after the last → Plain");
-        False(notes.ContainsKey("WeaponAuras_look"), "Plain leaves no note");
+        False(notes.ContainsKey("DeepNorthStaffVisuals_look"), "Plain leaves no note");
     }
 
     private static void Test_Looks_TooltipLine()

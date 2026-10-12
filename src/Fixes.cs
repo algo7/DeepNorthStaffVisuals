@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>A hand-set correction for one weapon where the automatic fit looks wrong.</summary>
     internal sealed class Fix

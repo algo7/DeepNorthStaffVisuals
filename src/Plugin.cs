@@ -8,13 +8,13 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     [BepInPlugin(Guid, Name, PluginVersion)]
     public sealed class Plugin : BaseUnityPlugin
     {
-        public const string Guid = "algo7.weaponauras";
-        public const string Name = "WeaponAuras";
+        public const string Guid = "algo7.deepnorthstaffvisuals";
+        public const string Name = "DeepNorthStaffVisuals";
         public const string PluginVersion = PluginInfo.Version; // from the git tag, generated at build time (MinVer)
 
         internal static ManualLogSource Log;

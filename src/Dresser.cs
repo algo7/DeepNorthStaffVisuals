@@ -5,7 +5,7 @@ using HarmonyLib;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>
     /// Putting looks on weapon models. A staff's look is a note on it (<see cref="Looks.FromNote"/>). Players: the local
@@ -18,7 +18,7 @@ namespace WeaponAuras
     internal static class Dresser
     {
         /// <summary>The key the look is kept under on a player's record.</summary>
-        private static readonly int s_lookKey = "WeaponAuras_look".GetStableHashCode();
+        private static readonly int s_lookKey = "DeepNorthStaffVisuals_look".GetStableHashCode();
 
         // A character's four weapon models and the item prefab hashes they were built from: right / left hand, right / left back.
         private static AccessTools.FieldRef<VisEquipment, GameObject>[] s_models;

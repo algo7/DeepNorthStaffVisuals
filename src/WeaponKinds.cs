@@ -1,6 +1,6 @@
 using System;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>The kinds of weapon a look can go on; each look has a donor weapon per kind (see <see cref="Looks"/>).</summary>
     internal enum Kind

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <!-- WeaponAuras test-build icon (placeholder): a plain diagonal sword in Frostfire blue (#7fd8ff) on the round wooden
+  <!-- DeepNorthStaffVisuals test-build icon (placeholder): a plain diagonal sword in Frostfire blue (#7fd8ff) on the round wooden
        shield of the author's other mod icons. Rendered to icon.png with cairosvg (1024 px, then LANCZOS down to 256). -->
   <defs>
     <clipPath id="wood"><circle cx="128" cy="128" r="96"/></clipPath>

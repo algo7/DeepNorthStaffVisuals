@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>
     /// The looks in key order, the game weapon each one is copied from (its donor) per kind, and which kinds stand in when
@@ -141,7 +141,7 @@ namespace WeaponAuras
         }
 
         /// <summary>The key of a staff's look in its item notes (ItemData.m_customData). Changing it loses every saved look.</summary>
-        public const string NoteKey = "WeaponAuras_look";
+        public const string NoteKey = "DeepNorthStaffVisuals_look";
 
         /// <summary>The look in a staff's notes: no note, or a name this version doesn't know (a newer look), is Plain.</summary>
         public static string FromNote(IDictionary<string, string> notes) =>

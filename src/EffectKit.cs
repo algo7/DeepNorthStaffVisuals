@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>
     /// What the game's weapons are made of, read from their prefabs and cached until the next world: which weapons can
@@ -11,7 +11,7 @@ namespace WeaponAuras
     internal static class EffectKit
     {
         /// <summary>Our container under a dressed model; the only thing the mod adds.</summary>
-        public const string Container = "WeaponAuras_look";
+        public const string Container = "DeepNorthStaffVisuals_look";
 
         /// <summary>Children of a model that aren't the weapon itself: the upgrade glow, the swing trail, our container.</summary>
         private static readonly HashSet<string> s_skip = new HashSet<string> { "UpgraderGlow", "equiped", Container };

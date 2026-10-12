@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>A point or direction in a model's own space (x, y, z = axes 0, 1, 2). Unity-free.</summary>
     internal readonly struct V3

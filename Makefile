@@ -1,4 +1,4 @@
-# WeaponAuras: build, test, package.
+# DeepNorthStaffVisuals: build, test, package.
 #
 # Installing is done in r2modman: `make package`, then "Import local mod" with the zip.
 # Game DLLs come from MANAGED_DIR (default: the local client); CI passes the dedicated server's:
@@ -20,22 +20,22 @@ PROPS      = -c $(CONFIGURATION) "-p:ManagedDir=$(MANAGED_DIR)"
 
 .PHONY: build test package clean log
 
-## build: compile bin/$(CONFIGURATION)/WeaponAuras.dll
+## build: compile bin/$(CONFIGURATION)/DeepNorthStaffVisuals.dll
 build:
-	"$(DOTNET)" build WeaponAuras.csproj $(PROPS)
+	"$(DOTNET)" build DeepNorthStaffVisuals.csproj $(PROPS)
 
 ## test: run the out-of-game unit tests
 test:
-	"$(DOTNET)" run --project tests/WeaponAuras.Tests.csproj $(PROPS)
+	"$(DOTNET)" run --project tests/DeepNorthStaffVisuals.Tests.csproj $(PROPS)
 
-## package: build Algo7-WeaponAuras-<version>.zip here, for r2modman's "Import local mod"
+## package: build Algo7-DeepNorthStaffVisuals-<version>.zip here, for r2modman's "Import local mod"
 package:
 	"$(DOTNET)" tool restore
-	"$(DOTNET)" build WeaponAuras.csproj $(PROPS) -t:Package
+	"$(DOTNET)" build DeepNorthStaffVisuals.csproj $(PROPS) -t:Package
 
 clean:
 	rm -rf bin obj tests/bin tests/obj
 
 ## log: this plugin's lines from the last game session (BEPINEX_DIR: the r2modman profile's BepInEx)
 log:
-	@grep -n "WeaponAuras" "$(BEPINEX_DIR)/LogOutput.log" | tail -n 60
+	@grep -n "DeepNorthStaffVisuals" "$(BEPINEX_DIR)/LogOutput.log" | tail -n 60

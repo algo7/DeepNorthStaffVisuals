@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace WeaponAuras
+namespace DeepNorthStaffVisuals
 {
     /// <summary>
     /// The key hint (bottom-right button list): a "Change look" row, cloned from the game's Block row, shown while combat
@@ -15,7 +15,7 @@ namespace WeaponAuras
     [HarmonyPatch]
     internal static class HintPatches
     {
-        internal const string RowName = "WeaponAuras_hint";
+        internal const string RowName = "DeepNorthStaffVisuals_hint";
         internal const string Label = "Change look";
 
         /// <summary>The hints the row belongs to: the HUD is new on every world load.</summary>
