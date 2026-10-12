@@ -12,8 +12,8 @@ Available effects:
 - Dyrnwyn's fire
 - Frostner's frost
 
-> **Note: visuals only.** A look changes nothing but how the staff looks. No extra damage or effects, the staff works
-> just like vanilla.
+> **Visuals only.** The mod only changes how the staff looks. No extra damage or effects, the staff works just like
+> vanilla.
 
 ![Seven Lightning Strikes on item stands along a wall, each wearing a different look](https://raw.githubusercontent.com/algo7/DeepNorthStaffVisuals/main/images/lightning-strike-looks.jpg)
 
