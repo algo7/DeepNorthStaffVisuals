@@ -114,8 +114,8 @@ internal static partial class Tests
         Eq(4, Method(typeof(ItemStand), "SetVisualItem").GetParameters().Length, "ItemStand.SetVisualItem(hash, variant, quality, orientation)");
         Eq(0, Method(typeof(ItemStand), "UpdateVisual").GetParameters().Length, "ItemStand.UpdateVisual()");
         Field(typeof(ItemStand), "m_visualItem", typeof(GameObject));
+        Field(typeof(ItemStand), "m_visualHash", typeof(int));
         Field(typeof(ItemStand), "m_nview", typeof(ZNetView));
-        True(typeof(ZDOVars).GetField("s_item", BindingFlags.Public | BindingFlags.Static) != null, "ZDOVars.s_item");
     }
 
     private static void Test_Game_TheGroundAndTheTooltip()

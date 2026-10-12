@@ -13,6 +13,7 @@ namespace WeaponAuras
     internal static class StandPatches
     {
         private static AccessTools.FieldRef<ItemStand, GameObject> s_model;
+        private static AccessTools.FieldRef<ItemStand, int> s_modelItem;
         private static AccessTools.FieldRef<ItemStand, ZNetView> s_nview;
 
         /// <summary>Each stand's look, re-read when its record changes. Weak keys: a destroyed stand isn't kept alive.</summary>
@@ -28,6 +29,7 @@ namespace WeaponAuras
         private static bool Prepare()
         {
             s_model = AccessTools.FieldRefAccess<ItemStand, GameObject>("m_visualItem");
+            s_modelItem = AccessTools.FieldRefAccess<ItemStand, int>("m_visualHash");
             s_nview = AccessTools.FieldRefAccess<ItemStand, ZNetView>("m_nview");
             return true;
         }
@@ -62,7 +64,9 @@ namespace WeaponAuras
             var nview = s_nview(stand);
             var record = nview != null ? nview.GetZDO() : null;
             if (model == null || record == null || ObjectDB.instance == null) return;
-            var prefab = ObjectDB.instance.GetItemPrefab(record.GetInt(ZDOVars.s_item));
+            // The model's own item, not the record's: a friend's game can build a new model (a sword hung after the staff)
+            // before the record catches up, and the record's old staff would put its look on the sword for good.
+            var prefab = ObjectDB.instance.GetItemPrefab(s_modelItem(stand));
             if (EffectKit.LookKind(prefab) == Kind.None) return;
             var look = s_looks.GetOrCreateValue(stand);
             if (!look.Read || look.Revision != record.DataRevision)
