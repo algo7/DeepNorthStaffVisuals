@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+    outputs:
+      version:
+        description: The version, from the git tag (MinVer)
+        value: ${{ jobs.build.outputs.version }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, test, package
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    env:
+      MANAGED_DIR: ${{ github.workspace }}/.valheim-managed
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # MinVer reads the version from the git tags
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Download the game DLLs (dedicated server, anonymous)
+        run: .github/scripts/valheim-managed.sh "$MANAGED_DIR"
+
+      - name: Test
+        run: make test DOTNET=dotnet MANAGED_DIR="$MANAGED_DIR"
+
+      - name: Package
+        run: make package DOTNET=dotnet MANAGED_DIR="$MANAGED_DIR"
+
+      - name: Version (from the generated manifest)
+        id: version
+        run: echo "version=$(python3 -c 'import json; print(json.load(open("bin/package/manifest.json"))["version_number"])')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: Algo7-DeepNorthStaffVisuals-${{ steps.version.outputs.version }}.zip
+          if-no-files-found: error

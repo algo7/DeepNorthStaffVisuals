@@ -1,0 +1,23 @@
+# Thunderstore publishing settings for `tcli publish --file <zip>` (the release workflow,
+# .github/workflows/release.yml). The zip is built by `make package`; its manifest.json (generated from
+# DeepNorthStaffVisuals.csproj) decides name and version. namespace = the Thunderstore team; CI checks namespace and name
+# against the csproj (ModAuthor, AssemblyName). versionNumber isn't used with --file, but tcli requires a valid one.
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "Algo7"
+name = "DeepNorthStaffVisuals"
+versionNumber = "1.0.0"
+
+[build]
+outdir = "./bin/thunderstore"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+
+[publish.categories]
+# skins: changes how the staffs look, nothing else. gear: both staffs are weapons. deep-north-update: the staffs come with
+# it, and it's the game update the mod is built and tested for (Valheim 1.0). ai-generated: made with AI assistance.
+valheim = ["mods", "client-side", "skins", "gear", "deep-north-update", "ai-generated"]

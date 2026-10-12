@@ -1,0 +1,150 @@
+name: Release
+
+# Write a `## X.Y.Z` section in CHANGELOG.md, then push the tag vX.Y.Z: the version comes from the tag (MinVer), nothing
+# else to edit. After the build and checks, the github-release job waits for approval (environment "release", the only
+# gate), then creates the GitHub Release with the zip. Once it has passed, each mod database job (Thunderstore, Hexium)
+# uploads the same zip in parallel, with its token from the environment "mod-databases" (no reviewer, tags v* only).
+# Another mod database is one more token there and one more job like these. Hexium is skipped while that environment
+# has no HEXIUM_AUTH_TOKEN secret. After a failed upload, "Re-run failed jobs" retries only that one.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  check:
+    name: Tag, version and changelog
+    needs: ci
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.ci.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Thunderstore and Hexium configs match the project
+        run: |
+          author=$(dotnet msbuild DeepNorthStaffVisuals.csproj -getProperty:ModAuthor)
+          name=$(dotnet msbuild DeepNorthStaffVisuals.csproj -getProperty:AssemblyName)
+          for f in thunderstore.toml hexium.toml; do
+            grep -qx "namespace = \"$author\"" $f || { echo "::error::$f namespace isn't $author"; exit 1; }
+            grep -qx "name = \"$name\"" $f || { echo "::error::$f name isn't $name"; exit 1; }
+          done
+
+      - name: Tag matches the project version
+        run: |
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match the project version $VERSION"; exit 1
+          fi
+
+      - name: CHANGELOG.md has a section for it
+        run: |
+          if ! grep -q "^## $VERSION\b" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## $VERSION' section: write the release notes there, then tag again"; exit 1
+          fi
+
+  github-release:
+    name: GitHub Release
+    needs: [ci, check]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.ci.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: package
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v v="$VERSION" '/^## /{p=($2==v); next} p' CHANGELOG.md > release-notes.md
+          # Re-runnable: a release left by an earlier attempt only gets its zip replaced.
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "Algo7-DeepNorthStaffVisuals-$VERSION.zip" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "Algo7-DeepNorthStaffVisuals-$VERSION.zip" \
+              --title "DeepNorthStaffVisuals $VERSION" --notes-file release-notes.md
+          fi
+
+  thunderstore:
+    name: Thunderstore
+    needs: [ci, github-release]
+    runs-on: ubuntu-latest
+    environment: mod-databases
+    env:
+      VERSION: ${{ needs.ci.outputs.version }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: package
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Thunderstore
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+        run: |
+          dotnet tool restore
+          dotnet tcli publish --config-path thunderstore.toml --file "Algo7-DeepNorthStaffVisuals-$VERSION.zip"
+
+  hexium:
+    name: Hexium
+    needs: [ci, github-release]
+    runs-on: ubuntu-latest
+    environment: mod-databases
+    env:
+      VERSION: ${{ needs.ci.outputs.version }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: package
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Hexium
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.HEXIUM_AUTH_TOKEN }}
+        run: |
+          if [ -z "$TCLI_AUTH_TOKEN" ]; then
+            echo "::warning::No HEXIUM_AUTH_TOKEN secret in the mod-databases environment: Hexium skipped"; exit 0
+          fi
+          # Re-runnable: each version can only be uploaded once, so a version already on Hexium only skips the upload.
+          if curl -sf -o /dev/null "https://valheim.hexium.gg/api/experimental/package/Algo7/DeepNorthStaffVisuals/$VERSION/"; then
+            echo "Algo7-DeepNorthStaffVisuals $VERSION is already on Hexium: upload skipped"
+          else
+            dotnet tool restore
+            dotnet tcli publish --config-path hexium.toml --file "Algo7-DeepNorthStaffVisuals-$VERSION.zip"
+          fi
+          # Install location (client-side is that on Hexium, not a category) and the categories from hexium.toml: Hexium
+          # ignores the categories sent with the upload. Set on every run (same values), so a re-run fixes them if this
+          # call failed after the upload.
+          categories=$(python3 -c 'import json, tomllib; print(json.dumps(tomllib.load(open("hexium.toml", "rb"))["publish"]["categories"]["valheim"]))')
+          curl -sSf -X POST "https://valheim.hexium.gg/api/mod/Algo7/DeepNorthStaffVisuals/set-metadata" \
+            -H "Authorization: Bearer $TCLI_AUTH_TOKEN" -H "Content-Type: application/json" \
+            -d "{\"install_location\": \"client\", \"categories\": $categories}"

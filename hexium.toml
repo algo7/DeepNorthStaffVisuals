@@ -1,0 +1,28 @@
+# Hexium publishing settings for `tcli publish --config-path hexium.toml --file <zip>` (the release workflow,
+# .github/workflows/release.yml). Hexium's upload API is Thunderstore's, so the same tcli uploads the same zip (built by
+# `make package`; its manifest.json decides name and version).
+# namespace = the Hexium team (Algo7, as on Thunderstore); CI checks namespace and name against the csproj (ModAuthor,
+# AssemblyName). versionNumber isn't used with --file, but tcli requires a valid one.
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "Algo7"
+name = "DeepNorthStaffVisuals"
+versionNumber = "1.0.0"
+
+[build]
+outdir = "./bin/thunderstore"
+
+[publish]
+repository = "https://hexium.gg"
+communities = ["valheim"]
+
+[publish.categories]
+# Hexium's own list (valheim.hexium.gg/api/experimental/community/valheim/category/), not Thunderstore's.
+# This list is the source of truth for the mod's Hexium tags. Hexium ignores the categories sent with the upload, so
+# the release workflow sets this list and the install location after it: change tags here, not on the Hexium page
+# (a tag changed only on the page is reverted at the next release).
+# Client-side isn't a category on Hexium: it's the install location ("client"), shown on the page as Client-only.
+# Hexium has no AI-generated category (its FAQ: not required); the README's disclosure line stays.
+valheim = ["Cosmetics", "Visuals", "Weapons", "Open Source", "Valheim 1.0"]

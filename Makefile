@@ -1,6 +1,6 @@
 # DeepNorthStaffVisuals: build, test, package.
 #
-# Installing is done in r2modman: `make package`, then "Import local mod" with the zip.
+# Installing is done in Gale: `make package`, then import the zip into the profile.
 # Game DLLs come from MANAGED_DIR (default: the local client); CI passes the dedicated server's:
 #   make test MANAGED_DIR=/path/to/valheim_server_Data/Managed
 
