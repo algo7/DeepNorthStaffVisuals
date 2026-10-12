@@ -104,9 +104,13 @@ namespace WeaponAuras
             var donor = EffectKit.DonorFor(Current, fix != null && fix.DonorKind != Kind.None ? fix.DonorKind : kind);
             if (donor == null || !EffectKit.ModelBox(model, out var box)) return;
             var fit = new Fit(donor.Frame, new ModelFrame(box, kind != Kind.Bow), fix);
-            var container = new GameObject(EffectKit.Container).transform;
-            container.SetParent(model, false);
-            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container, fit);
+            // The copies wake up only once they're fitted: LightFlicker keeps the position it wakes up at and puts the
+            // light back there every frame, and world-space particles would start at the unfitted spot.
+            var container = new GameObject(EffectKit.Container);
+            container.SetActive(false);
+            container.transform.SetParent(model, false);
+            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container.transform, fit);
+            container.SetActive(true);
         }
     }
 }
