@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
@@ -29,29 +30,39 @@ namespace WeaponAuras
             if (s_off) return;
             try
             {
-                if (__instance != s_hints)
-                {
-                    s_hints = __instance;
-                    s_row = null;
-                }
-                var combat = __instance.m_combatHints;
-                var show = combat != null && combat.activeSelf && Dresser.HasLookable(handsOnly: true);
-                if (s_row == null)
-                {
-                    if (!show) return;
-                    s_row = BuildRow(combat.transform);
-                    if (s_row == null)
-                    {
-                        TurnOff("The key hint's Block row wasn't found (a game update?): no 'Change look' hint");
-                        return;
-                    }
-                }
-                if (s_row.activeSelf != show) s_row.SetActive(show);
+                Refresh(__instance);
             }
             catch (Exception e)
             {
                 TurnOff($"The 'Change look' key hint failed; no hint from now on: {e}");
             }
+        }
+
+        /// <summary>
+        /// Builds the row once per HUD and shows it with a weapon that can take a look out. Outside the patch method, so a
+        /// game update that removes something used here fails inside the patch's try, not in the game's hint update.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void Refresh(KeyHints hints)
+        {
+            if (hints != s_hints)
+            {
+                s_hints = hints;
+                s_row = null;
+            }
+            var combat = hints.m_combatHints;
+            var show = combat != null && combat.activeSelf && Dresser.HasLookable(handsOnly: true);
+            if (s_row == null)
+            {
+                if (!show) return;
+                s_row = BuildRow(combat.transform);
+                if (s_row == null)
+                {
+                    TurnOff("The key hint's Block row wasn't found (a game update?): no 'Change look' hint");
+                    return;
+                }
+            }
+            if (s_row.activeSelf != show) s_row.SetActive(show);
         }
 
         /// <summary>A copy of CombatHints/Keyboard/Block (Text + key_bkg/Key) at the end of the keyboard list.</summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -72,14 +73,24 @@ namespace WeaponAuras
             if (!s_running) return;
             try
             {
-                var player = Player.m_localPlayer;
-                if (player == null || !KeyPressed() || !s_takeInput(player)) return;
-                Dresser.OnKey();
+                CheckKey();
             }
             catch (Exception e)
             {
                 ErrorOnce("key", $"Changing the look failed: {e}");
             }
+        }
+
+        /// <summary>
+        /// The key press. Outside Update, so a game update that removes something used here fails inside Update's try
+        /// (logged once) instead of making Unity log an error every frame.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void CheckKey()
+        {
+            var player = Player.m_localPlayer;
+            if (player == null || !KeyPressed() || !s_takeInput(player)) return;
+            Dresser.OnKey();
         }
 
         /// <summary>The key went down this frame with its modifiers held, read through the game's input.</summary>

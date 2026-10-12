@@ -29,9 +29,13 @@ namespace WeaponAuras
         /// <summary>The look code last put on each player's models. Weak keys: a destroyed player isn't kept alive.</summary>
         private static ConditionalWeakTable<VisEquipment, Applied> s_applied = new ConditionalWeakTable<VisEquipment, Applied>();
 
+        /// <summary>The per-frame check failed outside of dressing (a game update?): it stays off until the next world.</summary>
+        private static bool s_updateOff;
+
         private sealed class Applied
         {
-            public int Code; // 0 (Plain) at first: a player's models start plain
+            public bool Seen; // false until the first check: "not checked yet" isn't "Plain" (a model may already wear a look)
+            public int Code;
         }
 
         /// <summary>Harmony calls this before patching: a missing field fails the patch (logged by Plugin.TryPatch).</summary>
@@ -60,6 +64,7 @@ namespace WeaponAuras
         {
             Current = Looks.Plain;
             s_applied = new ConditionalWeakTable<VisEquipment, Applied>();
+            s_updateOff = false;
         }
 
         [HarmonyPatch(typeof(VisEquipment), "AttachItem")]
@@ -69,10 +74,7 @@ namespace WeaponAuras
             if (__result == null) return;
             try
             {
-                var record = RecordOf(__instance);
-                if (record == null || ObjectDB.instance == null) return;
-                var look = Looks.FromCode(record.GetInt(s_lookKey));
-                if (look != Looks.Plain) Dress(__result.transform, ObjectDB.instance.GetItemPrefab(itemHash), look);
+                DressNew(__instance, __result.transform, itemHash);
             }
             catch (Exception e)
             {
@@ -80,38 +82,69 @@ namespace WeaponAuras
             }
         }
 
-        /// <summary>
-        /// Every frame, after the game has updated a character's equipment: the local player's look goes onto their record,
-        /// and a player whose record shows another look than their models wear gets all four models re-dressed.
-        /// </summary>
+        /// <summary>A player's new weapon model gets the look on their record. Outside the patch method: see <see cref="CheckLook"/>.</summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void DressNew(VisEquipment vis, Transform model, int itemHash)
+        {
+            var record = RecordOf(vis);
+            if (record == null || ObjectDB.instance == null) return;
+            var look = Looks.FromCode(record.GetInt(s_lookKey));
+            if (look != Looks.Plain) Dress(model, ObjectDB.instance.GetItemPrefab(itemHash), look);
+        }
+
         [HarmonyPatch(typeof(VisEquipment), nameof(VisEquipment.CustomUpdate))]
         [HarmonyPostfix]
         private static void CustomUpdate(VisEquipment __instance)
         {
+            if (s_updateOff) return;
             try
             {
-                var record = RecordOf(__instance);
-                if (record == null || ObjectDB.instance == null) return;
-                if (IsLocalPlayer(__instance))
-                {
-                    // Set sends the record only when the value changes, but Plain's 0 on a record without the key would add it.
-                    var mine = Looks.Code(Current);
-                    if (record.GetInt(s_lookKey) != mine) record.Set(s_lookKey, mine, okForNotOwner: false);
-                }
-                var code = record.GetInt(s_lookKey);
-                var applied = s_applied.GetOrCreateValue(__instance);
-                if (applied.Code == code) return;
-                applied.Code = code;
-                var look = Looks.FromCode(code);
-                for (var i = 0; i < s_models.Length; i++)
-                {
-                    var model = s_models[i](__instance);
-                    if (model != null) Dress(model.transform, ObjectDB.instance.GetItemPrefab(s_hashes[i](__instance)), look);
-                }
+                CheckLook(__instance);
             }
             catch (Exception e)
             {
-                Plugin.ErrorOnce("update", $"Couldn't update a player's look (their staff keeps the one it has): {e}");
+                // Failing again every frame for every character would cost every frame; looks just stop changing instead.
+                s_updateOff = true;
+                Plugin.ErrorOnce("update", $"Players' looks stop changing until the next world (a game update?): {e}");
+            }
+        }
+
+        /// <summary>
+        /// Every frame, after the game has updated a character's equipment: the local player's look goes onto their record,
+        /// and a player whose record shows another look than their models wear gets all four models re-dressed.
+        /// Kept out of the patch method: if a game update removes something used here, the call fails inside the patch's
+        /// try instead of in the game's update loop, which updates every character's equipment one after another.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void CheckLook(VisEquipment vis)
+        {
+            var record = RecordOf(vis);
+            if (record == null || ObjectDB.instance == null) return;
+            if (IsLocalPlayer(vis))
+            {
+                // Set sends the record only when the value changes, but Plain's 0 on a record without the key would add it.
+                var mine = Looks.Code(Current);
+                if (record.GetInt(s_lookKey) != mine) record.Set(s_lookKey, mine, okForNotOwner: false);
+            }
+            var code = record.GetInt(s_lookKey);
+            var applied = s_applied.GetOrCreateValue(vis);
+            if (applied.Seen && applied.Code == code) return;
+            applied.Seen = true;
+            applied.Code = code;
+            var look = Looks.FromCode(code);
+            for (var i = 0; i < s_models.Length; i++)
+            {
+                var model = s_models[i](vis);
+                if (model == null) continue;
+                try
+                {
+                    Dress(model.transform, ObjectDB.instance.GetItemPrefab(s_hashes[i](vis)), look);
+                }
+                catch (Exception e)
+                {
+                    // One model failing doesn't keep the others on the old look.
+                    Plugin.ErrorOnce("dress", $"Couldn't put the look on a weapon (it stays plain): {e}");
+                }
             }
         }
 
