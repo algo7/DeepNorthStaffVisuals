@@ -126,6 +126,21 @@ namespace WeaponAuras
         public static double RateBoost(string look) => look == "Bleeding" ? 2.5 : 1;
 
         /// <summary>
+        /// A look's code on a player's shared record: Plain (or an unknown look) is 0, every other look its name's stable
+        /// hash (the game's own string hash), so a look keeps its code from one version to the next.
+        /// </summary>
+        public static int Code(string look) => Array.IndexOf(Order, look) >= 0 ? look.GetStableHashCode() : 0;
+
+        /// <summary>The look a record's code stands for: 0, or a code this version doesn't know (a newer look), is Plain.</summary>
+        public static string FromCode(int code)
+        {
+            if (code == 0) return Plain;
+            foreach (var look in Order)
+                if (look.GetStableHashCode() == code) return look;
+            return Plain;
+        }
+
+        /// <summary>
         /// The look after <paramref name="current"/> whose donors can be found (<paramref name="isAvailable"/>); after the
         /// last, or with none available, Plain. Plain or an unknown look starts from the first.
         /// </summary>

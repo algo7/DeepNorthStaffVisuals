@@ -85,4 +85,28 @@ internal static partial class Tests
         foreach (var name in new[] { "flames", "blood drip", "Clouds", "Sparcs", "Splats", "" })
             False(Looks.SpreadsAlongWeapon(name), name);
     }
+
+    private static void Test_Looks_CodesNeverChange()
+    {
+        // Friends' games decode these: a changed code shows as Plain on their side. Values = the game's stable hash of the name.
+        Eq(0, Looks.Code(Looks.Plain), "Plain");
+        Eq(-77004796, Looks.Code("Frostfire"), "Frostfire");
+        Eq(-1172106468, Looks.Code("Thunderblood"), "Thunderblood");
+        Eq(924734674, Looks.Code("Bleeding"), "Bleeding");
+        Eq(-951138885, Looks.Code("Storming"), "Storming");
+        Eq(1473679531, Looks.Code("Primal"), "Primal");
+        Eq(-1832295007, Looks.Code("Dyrnwyn"), "Dyrnwyn");
+        Eq(-1360893387, Looks.Code("Frostner"), "Frostner");
+        Eq(0, Looks.Code("NoSuchLook"), "unknown look");
+        Eq(0, Looks.Code(null), "no look");
+    }
+
+    private static void Test_Looks_CodesReadBack()
+    {
+        foreach (var look in Looks.Order) Eq(look, Looks.FromCode(Looks.Code(look)), $"{look} round trip");
+        Eq(Looks.Plain, Looks.FromCode(0), "0 → Plain");
+        Eq(Looks.Plain, Looks.FromCode(12345), "a code this version doesn't know → Plain");
+        Eq(Looks.Order.Length, Looks.Order.Select(Looks.Code).Distinct().Count(), "every look has its own code");
+        False(Looks.Order.Any(l => Looks.Code(l) == 0), "no look shares Plain's 0");
+    }
 }
