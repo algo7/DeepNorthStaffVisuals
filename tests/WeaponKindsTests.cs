@@ -59,10 +59,11 @@ internal static partial class Tests
         }
     }
 
-    private static void Test_Kinds_OnlyStaffsTakeLooks()
+    private static void Test_Kinds_OnlyTheDeepNorthStaffsTakeLooks()
     {
-        True(WeaponKinds.CanTakeLook(Kind.Staff), "staffs take looks");
-        foreach (Kind kind in System.Enum.GetValues(typeof(Kind)))
-            if (kind != Kind.Staff) False(WeaponKinds.CanTakeLook(kind), $"{kind} doesn't (glowing effects are the game's late-game reward)");
+        True(WeaponKinds.CanTakeLook("StaffOrbofAhri"), "Echo Spike");
+        True(WeaponKinds.CanTakeLook("StaffThunderBlood"), "Lightning Strike");
+        foreach (var other in new[] { "StaffShield", "StaffSpiritCaller", "StaffFrostOrbs", "StaffFireball", "SwordIron", "BowFineWood", "" })
+            False(WeaponKinds.CanTakeLook(other), other);
     }
 }

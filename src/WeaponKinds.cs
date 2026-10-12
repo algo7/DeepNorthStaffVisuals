@@ -51,10 +51,13 @@ namespace WeaponAuras
         }
 
         /// <summary>
-        /// Only staffs take looks: glowing effects are what the game gives late-game weapons, and staffs are late-game gear
-        /// that look plain. The other kinds still matter as donors (the variants the effects are copied from).
+        /// The two Deep North staffs with no effect of their own: Echo Spike and Lightning Strike. Glowing effects are what
+        /// the game gives late-game weapons, and these late-game staffs look plain. The other kinds still matter as donors
+        /// (the variants the effects are copied from).
         /// </summary>
-        public static bool CanTakeLook(Kind kind) => kind == Kind.Staff;
+        private static readonly string[] s_takeLooks = { "StaffOrbofAhri", "StaffThunderBlood" };
+
+        public static bool CanTakeLook(string prefabName) => Array.IndexOf(s_takeLooks, prefabName) >= 0;
 
         /// <summary>
         /// Which way a kind's head or tip points along the model's length axis (z for every weapon): +1, except spears,

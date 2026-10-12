@@ -57,10 +57,10 @@ namespace WeaponAuras
         private static Kind ReadLookKind(GameObject prefab)
         {
             var item = prefab.GetComponent<ItemDrop>();
-            if (item == null) return Kind.None;
+            if (item == null || !WeaponKinds.CanTakeLook(prefab.name)) return Kind.None;
             var shared = item.m_itemData.m_shared;
             var kind = WeaponKinds.KindOf(shared.m_itemType, shared.m_skillType, prefab.name);
-            if (!WeaponKinds.CanTakeLook(kind)) return Kind.None;
+            if (kind == Kind.None) return Kind.None;
             var held = HeldModel(prefab.transform);
             if (held == null || held.name != "attach") return Kind.None; // fitted to the body (fist weapons, Berserkir axes)
             if (HasOwnEffects(held)) return Kind.None;

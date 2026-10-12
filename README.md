@@ -2,8 +2,7 @@
 
 A client-side [BepInEx](https://github.com/BepInEx/BepInEx) mod for Valheim: the game's weapon effects (Frostfire
 flames, Thunderblood lightning, the Ashlands Bleeding / Storming / Primal effects, Dyrnwyn's fire, Frostner's frost) on
-the magic staffs that have none (Echo Spike, Staff of Protection, Lightning Strike). Visual only; other players see the
-plain staff.
+the Deep North staffs Echo Spike and Lightning Strike, which have none. Visual only; other players see the plain staff.
 
 What it does for players is in [package/README.md](package/README.md). Changes: [CHANGELOG.md](CHANGELOG.md).
 

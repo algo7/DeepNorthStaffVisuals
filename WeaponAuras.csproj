@@ -9,7 +9,7 @@
     <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
     <!-- Thunderstore namespace / r2modman author; the package's manifest.json is generated from these (Package target). -->
     <ModAuthor>Algo7</ModAuthor>
-    <ModDescription>Frostfire, Thunderblood and other weapon effects for the plain magic staffs: press L to change the look. Client-side, visual only.</ModDescription>
+    <ModDescription>Frostfire, Thunderblood and other weapon effects for the Deep North staffs Echo Spike and Lightning Strike: press L to change the look. Client-side, visual only.</ModDescription>
     <ModWebsite>https://github.com/algo7/WeaponAuras</ModWebsite>
     <BepInExPackDependency>denikson-BepInExPack_Valheim-5.4.2351</BepInExPackDependency>
     <LangVersion>latest</LangVersion>
