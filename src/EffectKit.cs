@@ -19,6 +19,9 @@ namespace WeaponAuras
         {
             public string Name;
 
+            /// <summary>The donor's own kind: where its business end starts (WeaponKinds.GameEffectStart).</summary>
+            public Kind Kind;
+
             /// <summary>The donor prefab's held model (its "attach" child): the parts' poses are read relative to it.</summary>
             public Transform Model;
 
@@ -155,7 +158,7 @@ namespace WeaponAuras
             if (parts.Count == 0) return null;
             var shared = item.m_itemData.m_shared;
             var kind = WeaponKinds.KindOf(shared.m_itemType, shared.m_skillType, name);
-            return new Donor { Name = name, Model = model, Frame = new ModelFrame(box, kind != Kind.Bow), Parts = parts };
+            return new Donor { Name = name, Kind = kind, Model = model, Frame = new ModelFrame(box, WeaponKinds.HeadSign(kind)), Parts = parts };
         }
 
         /// <summary>The topmost children that hold particle systems or lights but no mesh of the weapon.</summary>

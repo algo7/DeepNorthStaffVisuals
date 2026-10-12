@@ -64,18 +64,15 @@ namespace WeaponAuras
         /// <summary>+1 / -1: which way along that model axis the frame axis points.</summary>
         public readonly int[] Sign = new int[3];
 
-        /// <param name="lengthFromFarEnd">
-        /// True: length points to the box end farther from the hand (the model origin), i.e. the tip. False (bows: the hand
-        /// is mid-bow, so neither end is the tip): length points along its model axis.
-        /// </param>
-        public ModelFrame(Box box, bool lengthFromFarEnd)
+        /// <param name="lengthSign">Which way along its model axis the length points, towards the head or tip (+1 / -1).</param>
+        public ModelFrame(Box box, int lengthSign)
         {
             Box = box;
             var order = Enumerable.Range(0, 3).OrderByDescending(box.Size).ThenBy(a => a).ToArray();
             Axis[0] = order[0];
             Axis[1] = order[1];
             Axis[2] = order[2];
-            Sign[0] = !lengthFromFarEnd || Math.Abs(box.Max[order[0]]) >= Math.Abs(box.Min[order[0]]) ? 1 : -1;
+            Sign[0] = lengthSign >= 0 ? 1 : -1;
             Sign[1] = 1;
             // Thickness = length × width, so the frame is a rotation of the model axes, never a mirror image.
             Sign[2] = Sign[0] * Sign[1] * (IsCyclic(order[0], order[1]) ? 1 : -1);
@@ -108,8 +105,10 @@ namespace WeaponAuras
     }
 
     /// <summary>
-    /// Maps a donor weapon's effect onto another weapon: points keep their fractions along length / width / thickness,
-    /// directions turn with the frames, emitters stretch by the size ratios (within limits). Unity-free.
+    /// Maps a donor weapon's effect onto another weapon. Along the length, the donor's business end (from where its blade
+    /// or head starts to the tip) lands on the target's, and the part before it on the part before; width and thickness
+    /// keep their fractions. Directions turn with the frames; emitters stretch by the size ratios (within limits).
+    /// Unity-free.
     /// </summary>
     internal sealed class Fit
     {
@@ -120,22 +119,24 @@ namespace WeaponAuras
         public readonly ModelFrame Donor, Target;
         private readonly double[] m_stretch = new double[3];
         private readonly double[] m_shift = new double[3];
+        private readonly double m_donorStart, m_targetStart;
 
-        /// <summary>How much the donor's particle rate is multiplied: the length ratio within limits.</summary>
+        /// <summary>How much the donor's particle rate is multiplied: the business ends' length ratio within limits.</summary>
         public readonly double RateFactor;
 
-        public Fit(ModelFrame donor, ModelFrame target, Fix fix)
+        /// <param name="donorStart">Where the donor's business end starts (fraction of its length from the butt).</param>
+        /// <param name="targetStart">Where the target's business end starts.</param>
+        public Fit(ModelFrame donor, ModelFrame target, double donorStart, double targetStart, Fix fix)
         {
             Donor = donor;
             Target = target;
+            m_donorStart = donorStart;
+            m_targetStart = targetStart;
             var extra = fix?.Stretch ?? 1;
-            for (var k = 0; k < 3; k++)
-            {
-                var ratio = Ratio(k);
-                var stretch = k == 0 ? Clamp(ratio, MinLengthStretch, MaxLengthStretch) : Clamp(ratio, MinSideStretch, MaxSideStretch);
-                m_stretch[k] = stretch * extra;
-            }
-            RateFactor = Clamp(Ratio(0), MinRate, MaxRate);
+            var lengthRatio = BusinessEndRatio();
+            m_stretch[0] = Clamp(lengthRatio, MinLengthStretch, MaxLengthStretch) * extra;
+            for (var k = 1; k < 3; k++) m_stretch[k] = Clamp(Ratio(k), MinSideStretch, MaxSideStretch) * extra;
+            RateFactor = Clamp(lengthRatio, MinRate, MaxRate);
             m_shift[0] = fix?.Along ?? 0;
             m_shift[1] = fix?.Across ?? 0;
         }
@@ -146,14 +147,33 @@ namespace WeaponAuras
             return donorSize < 1e-6 ? 1 : Target.Size(k) / donorSize;
         }
 
+        /// <summary>The target's business end length over the donor's.</summary>
+        private double BusinessEndRatio()
+        {
+            var donorEnd = (1 - m_donorStart) * Donor.Size(0);
+            return donorEnd < 1e-6 ? 1 : (1 - m_targetStart) * Target.Size(0) / donorEnd;
+        }
+
+        /// <summary>A donor length fraction → the target's: [0, donorStart] → [0, targetStart], the rest → [targetStart, 1].</summary>
+        private double MapLength(double f)
+        {
+            if (f < m_donorStart && m_donorStart > 1e-6) return f * m_targetStart / m_donorStart;
+            var donorEnd = 1 - m_donorStart;
+            return donorEnd < 1e-6 ? f : m_targetStart + (f - m_donorStart) * (1 - m_targetStart) / donorEnd;
+        }
+
         private static double Clamp(double v, double min, double max) => v < min ? min : v > max ? max : v;
 
-        /// <summary>A donor-space point → the target-space point at the same fractions (plus the fix's shift).</summary>
+        /// <summary>A donor-space point → the target-space point (business end onto business end, plus the fix's shift).</summary>
         public V3 Point(V3 p)
         {
             var result = new V3(0, 0, 0);
             for (var k = 0; k < 3; k++)
-                result = V3.WithAxis(result, Target.Axis[k], Target.Coordinate(k, Donor.Fraction(p, k) + m_shift[k]));
+            {
+                var f = Donor.Fraction(p, k);
+                if (k == 0) f = MapLength(f);
+                result = V3.WithAxis(result, Target.Axis[k], Target.Coordinate(k, f + m_shift[k]));
+            }
             return result;
         }
 

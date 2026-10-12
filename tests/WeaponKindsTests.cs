@@ -38,4 +38,24 @@ internal static partial class Tests
         foreach (var horn in new[] { "Tankard", "TankardAnniversary", "TankardOdin", "Tankard_dvergr" })
             Eq(Kind.None, WeaponKinds.KindOf(ItemType.OneHandedWeapon, SkillType.Swords, horn), horn);
     }
+
+    private static void Test_Kinds_HeadDirection()
+    {
+        Eq(-1, WeaponKinds.HeadSign(Kind.Spear), "spear heads point to -z");
+        foreach (var kind in new[] { Kind.Sword, Kind.Greatsword, Kind.Knife, Kind.Axe, Kind.Battleaxe, Kind.Mace, Kind.Sledge,
+                     Kind.Atgeir, Kind.Bow, Kind.Crossbow, Kind.Staff })
+            Eq(1, WeaponKinds.HeadSign(kind), $"{kind} points to +z");
+    }
+
+    private static void Test_Kinds_BusinessEnds()
+    {
+        var ours = new[] { (Kind.Sword, 0.21), (Kind.Greatsword, 0.27), (Kind.Knife, 0.26), (Kind.Axe, 0.57), (Kind.Battleaxe, 0.74),
+            (Kind.Mace, 0.81), (Kind.Sledge, 0.74), (Kind.Spear, 0.66), (Kind.Atgeir, 0.40), (Kind.Staff, 0.55), (Kind.Bow, 0.0),
+            (Kind.Crossbow, 0.69) };
+        foreach (var (kind, start) in ours)
+        {
+            Eq(start, WeaponKinds.EffectStart(kind), $"{kind}: our looks start here");
+            Eq(kind == Kind.Atgeir ? 0.53 : start, WeaponKinds.GameEffectStart(kind), $"{kind}: the game's own variants start here");
+        }
+    }
 }

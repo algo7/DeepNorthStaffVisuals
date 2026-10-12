@@ -49,5 +49,40 @@ namespace WeaponAuras
                 default: return Kind.None;
             }
         }
+
+        /// <summary>
+        /// Which way a kind's head or tip points along the model's length axis (z for every weapon): +1, except spears,
+        /// whose heads point to -z (they're held near the middle, so the farther end isn't the head).
+        /// </summary>
+        public static int HeadSign(Kind kind) => kind == Kind.Spear ? -1 : 1;
+
+        /// <summary>
+        /// Where a kind's business end starts (blade, head, limbs), as a fraction of its length from the butt towards the
+        /// head: our looks are fitted between here and the tip. Bows: the whole bow.
+        /// </summary>
+        public static double EffectStart(Kind kind)
+        {
+            switch (kind)
+            {
+                case Kind.Sword: return 0.21;
+                case Kind.Greatsword: return 0.27;
+                case Kind.Knife: return 0.26;
+                case Kind.Axe: return 0.57;
+                case Kind.Battleaxe: return 0.74;
+                case Kind.Mace: return 0.81;
+                case Kind.Sledge: return 0.74;
+                case Kind.Spear: return 0.66;
+                case Kind.Atgeir: return 0.40; // from just in front of the front hand, like the Thunderblood Atgeir
+                case Kind.Staff: return 0.55;
+                case Kind.Crossbow: return 0.69;
+                default: return 0;
+            }
+        }
+
+        /// <summary>
+        /// Where the game's own variant weapons of a kind start their effects (the Frostfire ones): the same as
+        /// <see cref="EffectStart"/> except atgeirs, whose Frostfire flames start at 53 %.
+        /// </summary>
+        public static double GameEffectStart(Kind kind) => kind == Kind.Atgeir ? 0.53 : EffectStart(kind);
     }
 }
