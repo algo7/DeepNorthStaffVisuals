@@ -93,12 +93,16 @@ namespace WeaponAuras
         }
 
         /// <summary>
-        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, blood drips), by
-        /// name; " (1)"-style copies count as the same. Lightning bolts, sparks, splats, swirls and flares keep their own
+        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, Bleeding's drips
+        /// and swirls), by name; " (1)"-style copies count as the same. The swirls still circle the shaft: they orbit their
+        /// system's own z axis, which the fit lays along the weapon. Lightning bolts, sparks, splats and flares keep their own
         /// shapes.
         /// </summary>
         private static readonly string[] s_followers =
-            { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" };
+        {
+            "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip",
+            "Swirls",
+        };
 
         /// <summary>
         /// Extra particle rate for a look: Bleeding (swirls and drips only, no light; on the game's own weapons most of it
