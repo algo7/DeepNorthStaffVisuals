@@ -4,9 +4,9 @@
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>DeepNorthStaffVisuals</AssemblyName>
     <RootNamespace>DeepNorthStaffVisuals</RootNamespace>
-    <!-- The version comes from the latest git tag vX.Y.Z (MinVer); untagged test builds are 0.1.0. Nothing to edit by hand. -->
+    <!-- The version comes from the latest git tag vX.Y.Z (MinVer); untagged builds count from 1.0. Nothing to edit by hand. -->
     <MinVerTagPrefix>v</MinVerTagPrefix>
-    <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
+    <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
     <!-- Thunderstore namespace / r2modman author; the package's manifest.json is generated from these (Package target). -->
     <ModAuthor>Algo7</ModAuthor>
     <ModDescription>Frostfire, Thunderblood and other weapon effects for the Deep North staffs Echo Spike and Lightning Strike: press L to change the look. Client-side, visual only.</ModDescription>
