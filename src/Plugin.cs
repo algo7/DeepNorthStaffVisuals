@@ -36,7 +36,7 @@ namespace WeaponAuras
                 return;
             }
             s_key = Config.Bind("General", "Change look key", new KeyboardShortcut(KeyCode.L),
-                "Steps through the looks while you have a weapon equipped that can take one.");
+                "Changes the look of your equipped staff (also while it's on your back).");
             try
             {
                 // The game's own "is the player taking input" check (false with chat, inventory, map or a menu open).
@@ -61,7 +61,7 @@ namespace WeaponAuras
 
         private void OnDestroy() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-        /// <summary>Entering a world (or the main menu) starts on Plain: nothing is saved. ObjectDB is new, so are the caches.</summary>
+        /// <summary>Entering a world (or the main menu): ObjectDB is new, so are the caches.</summary>
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             Dresser.Reset();

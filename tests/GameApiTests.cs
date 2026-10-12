@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -86,5 +87,25 @@ internal static partial class Tests
         True(typeof(ZDO).GetMethod("Set", new[] { typeof(int), typeof(int), typeof(bool) }) != null, "ZDO.Set(int, int, bool)");
         // The look codes and the record key use the game's own string hash, the one its record keys are made with.
         Eq(ZDOVars.s_rightItem, "RightItem".GetStableHashCode(), "GetStableHashCode makes the game's record keys");
+    }
+
+    private static void Test_Game_TheStaffNote()
+    {
+        Field(typeof(ItemDrop.ItemData), "m_customData", typeof(Dictionary<string, string>));
+        Field(typeof(ItemDrop.ItemData), "m_dropPrefab", typeof(GameObject));
+        foreach (var name in new[] { "m_rightItem", "m_leftItem", "m_hiddenRightItem", "m_hiddenLeftItem" })
+            Field(typeof(Humanoid), name, typeof(ItemDrop.ItemData));
+        var load = typeof(ItemDrop).GetMethod("LoadFromZDO", new[] { typeof(ItemDrop.ItemData), typeof(ZDO), typeof(int) });
+        True(load != null && load.IsStatic, "static ItemDrop.LoadFromZDO(ItemData, ZDO, int)");
+        Eq(typeof(uint), typeof(ZDO).GetProperty("DataRevision")?.PropertyType, "ZDO.DataRevision");
+    }
+
+    private static void Test_Game_TheArmorStand()
+    {
+        Field(typeof(ArmorStand), "m_slots", typeof(List<ArmorStand.ArmorStandSlot>));
+        Field(typeof(ArmorStand.ArmorStandSlot), "m_slot", typeof(VisSlot));
+        // The model slots, in Dresser's model order: right / left hand, right / left back.
+        Eq("HandRight,HandLeft,BackRight,BackLeft",
+            string.Join(",", new[] { VisSlot.HandRight, VisSlot.HandLeft, VisSlot.BackRight, VisSlot.BackLeft }), "VisSlot names");
     }
 }
