@@ -72,4 +72,19 @@ internal static partial class Tests
         True(Method(typeof(KeyHints), "UpdateHints").GetParameters().Length == 0, "KeyHints.UpdateHints()");
         Field(typeof(KeyHints), "m_combatHints", typeof(GameObject));
     }
+
+    private static void Test_Game_TheRecord()
+    {
+        var update = Method(typeof(VisEquipment), "CustomUpdate");
+        Param(update, "deltaTime", typeof(float));
+        Param(update, "time", typeof(float));
+        Field(typeof(VisEquipment), "m_nview", typeof(ZNetView));
+        Field(typeof(VisEquipment), "m_isPlayer", typeof(bool));
+        Field(typeof(VisEquipment), "m_isArmorStand", typeof(bool));
+        Eq(typeof(ZDO), typeof(ZNetView).GetMethod("GetZDO", Type.EmptyTypes)?.ReturnType, "ZNetView.GetZDO()");
+        Eq(typeof(int), typeof(ZDO).GetMethod("GetInt", new[] { typeof(int), typeof(int) })?.ReturnType, "ZDO.GetInt(int, int)");
+        True(typeof(ZDO).GetMethod("Set", new[] { typeof(int), typeof(int), typeof(bool) }) != null, "ZDO.Set(int, int, bool)");
+        // The look codes and the record key use the game's own string hash, the one its record keys are made with.
+        Eq(ZDOVars.s_rightItem, "RightItem".GetStableHashCode(), "GetStableHashCode makes the game's record keys");
+    }
 }

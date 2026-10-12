@@ -63,7 +63,7 @@ namespace WeaponAuras
         /// <summary>Entering a world (or the main menu) starts on Plain: nothing is saved. ObjectDB is new, so are the caches.</summary>
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            Dresser.Current = Looks.Plain;
+            Dresser.Reset();
             EffectKit.Clear();
         }
 
