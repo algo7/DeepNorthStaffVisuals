@@ -220,4 +220,17 @@ internal static partial class Tests
         Eq(1, Fit.RingFractions(0.2).Count, "a tiny model: one ring");
         Near(0.515, Fit.RingFractions(0.2)[0], "in the middle");
     }
+
+    private static void Test_Fit_RingsStopSoTheDriftEndsAtTheTip()
+    {
+        var staff = Fit.RingFractions(2.33, 0.87);
+        Near(1 - 0.87 / 2.33, staff[staff.Count - 1], "the last ring's swirls drift up to the top, not past it");
+        Eq(4, staff.Count, "Lightning Strike: four rings from 8 % to 63 %");
+        var echo = Fit.RingFractions(1.13, 0.87);
+        Eq(1, echo.Count, "Echo Spike: one ring");
+        Near((0.08 + (1 - 0.87 / 1.13)) / 2, echo[0], "low on the staff");
+        Eq(1, Fit.RingFractions(0.5, 0.87).Count, "drift longer than the model: one ring");
+        Near(0.08, Fit.RingFractions(0.5, 0.87)[0], "at the bottom");
+        Eq(Fit.RingFractions(2.33).Count, Fit.RingFractions(2.33, 0).Count, "no drift: up to 95 % as before");
+    }
 }

@@ -72,12 +72,32 @@ namespace WeaponAuras
             var length = fit.Target.Size(0);
             var at = fit.Target.Fraction(FromUnity(fitted), 0);
             var rotation = t.rotation;
-            var fractions = Fit.RingFractions(length);
+            var fractions = Fit.RingFractions(length, Drift(ring));
             for (var i = 0; i < fractions.Count; i++)
             {
                 var copy = i == 0 ? t : Object.Instantiate(t.gameObject, t.parent, false).transform;
                 copy.position = container.TransformPoint(fitted + axis * (float)((fractions[i] - at) * length));
                 copy.rotation = rotation;
+            }
+        }
+
+        /// <summary>
+        /// How far a ring's particles travel along its own axis (the weapon's length) on average before they fade: their
+        /// velocity along z times their lifetime. Bleeding's swirls: 0.67 m/s for 1-1.6 s.
+        /// </summary>
+        private static double Drift(ParticleSystem ring)
+        {
+            var velocity = ring.velocityOverLifetime;
+            return velocity.enabled ? System.Math.Abs(Mean(velocity.z)) * Mean(ring.main.startLifetime) : 0;
+        }
+
+        private static float Mean(ParticleSystem.MinMaxCurve curve)
+        {
+            switch (curve.mode)
+            {
+                case ParticleSystemCurveMode.Constant: return curve.constant;
+                case ParticleSystemCurveMode.TwoConstants: return (curve.constantMin + curve.constantMax) / 2;
+                default: return curve.curveMultiplier;
             }
         }
 

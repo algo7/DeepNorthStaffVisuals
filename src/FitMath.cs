@@ -196,10 +196,14 @@ namespace WeaponAuras
         /// <summary>
         /// Where along a weapon of this length (m) to put repeated rings: one about every <paramref name="spacing"/> m from
         /// <paramref name="from"/> to <paramref name="to"/> (fractions of the length), evenly spaced; at least one, in the
-        /// middle.
+        /// middle. The rings stop early enough that what they emit, drifting <paramref name="drift"/> m towards the tip,
+        /// ends at the tip.
         /// </summary>
-        public static List<double> RingFractions(double length, double spacing = 0.4, double from = 0.08, double to = 0.95)
+        public static List<double> RingFractions(double length, double drift = 0, double spacing = 0.4, double from = 0.08,
+            double to = 0.95)
         {
+            if (length > 1e-6) to = Math.Min(to, 1 - drift / length);
+            if (to < from) to = from;
             var count = Math.Max(1, (int)Math.Round((to - from) * length / spacing) + 1);
             var fractions = new List<double>();
             if (count == 1)
