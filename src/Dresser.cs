@@ -113,7 +113,7 @@ namespace WeaponAuras
             var container = new GameObject(EffectKit.Container);
             container.SetActive(false);
             container.transform.SetParent(model, false);
-            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container.transform, fit, surface);
+            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container.transform, fit, surface, Looks.RateBoost(Current));
             container.SetActive(true);
         }
     }

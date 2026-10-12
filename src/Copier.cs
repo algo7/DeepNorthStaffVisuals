@@ -11,7 +11,8 @@ namespace WeaponAuras
     internal static class Copier
     {
         /// <param name="surface">The weapon's main mesh to emit from, or null to keep every emitter's fitted shape.</param>
-        public static void Copy(Transform part, Transform donorModel, Transform container, Fit fit, MeshRenderer surface)
+        /// <param name="rateBoost">Extra particle rate for the look (Looks.RateBoost).</param>
+        public static void Copy(Transform part, Transform donorModel, Transform container, Fit fit, MeshRenderer surface, double rateBoost)
         {
             var copy = Object.Instantiate(part.gameObject, container, false).transform;
             var toDonor = donorModel.worldToLocalMatrix;
@@ -40,6 +41,8 @@ namespace WeaponAuras
                     Trace(copiedSystems[i], surface, fit);
                 else
                     Stretch(copiedSystems[i], fromDonorRotation * originalSystems[i].transform.rotation, fit);
+                var emission = copiedSystems[i].emission;
+                emission.rateOverTimeMultiplier *= (float)rateBoost;
             }
         }
 

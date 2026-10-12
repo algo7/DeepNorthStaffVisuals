@@ -93,12 +93,18 @@ namespace WeaponAuras
         }
 
         /// <summary>
-        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost), by name;
-        /// " (1)"-style copies count as the same. Lightning bolts, sparks, splats, swirls, drips and flares keep their
-        /// own shapes.
+        /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, blood drips), by
+        /// name; " (1)"-style copies count as the same. Lightning bolts, sparks, splats, swirls and flares keep their own
+        /// shapes.
         /// </summary>
         private static readonly string[] s_followers =
-            { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1" };
+            { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" };
+
+        /// <summary>
+        /// Extra particle rate for a look: Bleeding (swirls and drips only, no light; on the game's own weapons most of it
+        /// is the red painted blade, which can't be copied) gets 2.5x so it shows. 1 for every other look.
+        /// </summary>
+        public static double RateBoost(string look) => look == "Bleeding" ? 2.5 : 1;
 
         public static bool FollowsWeapon(string emitterName)
         {
