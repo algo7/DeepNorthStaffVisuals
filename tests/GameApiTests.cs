@@ -48,17 +48,10 @@ internal static partial class Tests
         var attach = Method(typeof(VisEquipment), "AttachItem");
         Eq(typeof(GameObject), attach.ReturnType, "VisEquipment.AttachItem returns the model");
         Param(attach, "itemHash", typeof(int));
-        foreach (var name in new[] { "m_rightItemInstance", "m_leftItemInstance", "m_rightBackItemInstance", "m_leftBackItemInstance" })
-            Field(typeof(VisEquipment), name, typeof(GameObject));
-        foreach (var name in new[] { "m_currentRightItemHash", "m_currentLeftItemHash", "m_currentRightBackItemHash", "m_currentLeftBackItemHash" })
-            Field(typeof(VisEquipment), name, typeof(int));
     }
 
     private static void Test_Game_TheKey()
     {
-        var takeInput = Method(typeof(Player), "TakeInput");
-        Eq(typeof(bool), takeInput.ReturnType, "Player.TakeInput returns bool");
-        Eq(0, takeInput.GetParameters().Length, "Player.TakeInput()");
         True(typeof(ZInput).GetMethod("GetKeyDown", new[] { typeof(KeyCode), typeof(bool) }) != null, "ZInput.GetKeyDown(KeyCode, bool)");
         True(typeof(ZInput).GetMethod("GetKey", new[] { typeof(KeyCode), typeof(bool) }) != null, "ZInput.GetKey(KeyCode, bool)");
     }
@@ -70,7 +63,6 @@ internal static partial class Tests
 
     private static void Test_Game_TheHint()
     {
-        True(Method(typeof(KeyHints), "UpdateHints").GetParameters().Length == 0, "KeyHints.UpdateHints()");
         Field(typeof(KeyHints), "m_combatHints", typeof(GameObject));
     }
 
@@ -79,7 +71,6 @@ internal static partial class Tests
         var update = Method(typeof(VisEquipment), "CustomUpdate");
         Param(update, "deltaTime", typeof(float));
         Param(update, "time", typeof(float));
-        Field(typeof(VisEquipment), "m_nview", typeof(ZNetView));
         Field(typeof(VisEquipment), "m_isPlayer", typeof(bool));
         Field(typeof(VisEquipment), "m_isArmorStand", typeof(bool));
         Eq(typeof(ZDO), typeof(ZNetView).GetMethod("GetZDO", Type.EmptyTypes)?.ReturnType, "ZNetView.GetZDO()");
@@ -93,8 +84,6 @@ internal static partial class Tests
     {
         Field(typeof(ItemDrop.ItemData), "m_customData", typeof(Dictionary<string, string>));
         Field(typeof(ItemDrop.ItemData), "m_dropPrefab", typeof(GameObject));
-        foreach (var name in new[] { "m_rightItem", "m_leftItem", "m_hiddenRightItem", "m_hiddenLeftItem" })
-            Field(typeof(Humanoid), name, typeof(ItemDrop.ItemData));
         var load = typeof(ItemDrop).GetMethod("LoadFromZDO", new[] { typeof(ItemDrop.ItemData), typeof(ZDO), typeof(int) });
         True(load != null && load.IsStatic, "static ItemDrop.LoadFromZDO(ItemData, ZDO, int)");
         Eq(typeof(uint), typeof(ZDO).GetProperty("DataRevision")?.PropertyType, "ZDO.DataRevision");
@@ -109,22 +98,10 @@ internal static partial class Tests
             string.Join(",", new[] { VisSlot.HandRight, VisSlot.HandLeft, VisSlot.BackRight, VisSlot.BackLeft }), "VisSlot names");
     }
 
-    private static void Test_Game_TheItemStand()
-    {
-        Eq(4, Method(typeof(ItemStand), "SetVisualItem").GetParameters().Length, "ItemStand.SetVisualItem(hash, variant, quality, orientation)");
-        Eq(0, Method(typeof(ItemStand), "UpdateVisual").GetParameters().Length, "ItemStand.UpdateVisual()");
-        Field(typeof(ItemStand), "m_visualItem", typeof(GameObject));
-        Field(typeof(ItemStand), "m_visualHash", typeof(int));
-        Field(typeof(ItemStand), "m_nview", typeof(ZNetView));
-    }
-
     private static void Test_Game_TheGroundAndTheTooltip()
     {
-        Eq(0, Method(typeof(ItemDrop), "Start").GetParameters().Length, "ItemDrop.Start()");
         var tooltip = typeof(ItemDrop.ItemData).GetMethod("GetTooltip",
             new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool), typeof(float), typeof(int), typeof(bool) });
         True(tooltip != null && tooltip.IsStatic && tooltip.ReturnType == typeof(string), "static string ItemData.GetTooltip(ItemData, int, bool, float, int, bool)");
-        Param(tooltip, "item", typeof(ItemDrop.ItemData));
-        Param(tooltip, "crafting", typeof(bool));
     }
 }

@@ -65,7 +65,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: package
+          name: package-zip
 
       - name: GitHub Release
         env:
@@ -94,7 +94,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: package
+          name: package-zip
 
       - uses: actions/setup-dotnet@v6
         with:
@@ -121,7 +121,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: package
+          name: package-zip
 
       - uses: actions/setup-dotnet@v6
         with:

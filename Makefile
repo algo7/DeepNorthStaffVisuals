@@ -24,8 +24,8 @@ PROPS      = -c $(CONFIGURATION) "-p:ManagedDir=$(MANAGED_DIR)"
 build:
 	"$(DOTNET)" build DeepNorthStaffVisuals.csproj $(PROPS)
 
-## test: run the out-of-game unit tests
-test:
+## test: run the out-of-game unit tests (builds the plugin first: the hook check reads it)
+test: build
 	"$(DOTNET)" run --project tests/DeepNorthStaffVisuals.Tests.csproj $(PROPS)
 
 ## package: build Algo7-DeepNorthStaffVisuals-<version>.zip here, for r2modman's "Import local mod"

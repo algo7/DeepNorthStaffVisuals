@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Valheim's game DLLs for CI: only valheim_server_Data/Managed/*.dll of the free dedicated server (Steam app 896660,
 # anonymous login), fetched with DepotDownloader (64-bit; pinned and checksum-verified). Nothing from the game is committed.
+# Prints which server build it got (depot manifests, assembly_valheim.dll SHA-256), also to the run summary on CI.
 #   valheim-managed.sh <dir>    put the DLLs into <dir>
 set -euo pipefail
 
@@ -18,8 +19,14 @@ echo "$SHA256  $work/dd.zip" | sha256sum -c --quiet -
 unzip -o -q "$work/dd.zip" -d "$work"
 
 printf 'regex:^valheim_server_Data/Managed/.*\\.dll$\n' > "$work/files.txt"
-"$work/DepotDownloader" -app "$APP" -os linux -filelist "$work/files.txt" -dir "$work/server"
+"$work/DepotDownloader" -app "$APP" -os linux -filelist "$work/files.txt" -dir "$work/server" | tee "$work/download.log"
 
 mkdir -p "$dest"
 cp "$work/server/valheim_server_Data/Managed/"*.dll "$dest/"
 test -f "$dest/assembly_valheim.dll"
+
+{
+  echo "### Valheim dedicated server (app $APP)"
+  awk '/^Processing depot / { depot = $3 } /^Manifest [0-9]+ / { sub(/^Manifest /, ""); print "- depot " depot ": manifest " $0 }' "$work/download.log"
+  echo "- assembly_valheim.dll SHA-256: \`$(sha256sum "$dest/assembly_valheim.dll" | cut -d' ' -f1)\`"
+} | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"

@@ -1,0 +1,17 @@
+name: Daily check
+
+# CI (build, unit tests + the hook check, package) every day against the latest Valheim server, so a game update that
+# breaks a hook shows up here. In its own file because GitHub turns a public repo's scheduled workflows off after 60
+# days without activity: then only this one stops (Actions → Daily check → Enable workflow), not CI on pushes or
+# releases. "Run workflow" runs it by hand.
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC: 08:00 Zurich in summer, 07:00 in winter
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml

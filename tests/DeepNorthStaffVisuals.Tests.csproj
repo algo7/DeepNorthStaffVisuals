@@ -14,9 +14,24 @@
     <NoWarn>$(NoWarn);NU1701;MSB3277</NoWarn>
     <ValheimDir Condition="'$(ValheimDir)' == ''">$(HOME)/.local/share/Steam/steamapps/common/Valheim</ValheimDir>
     <ManagedDir Condition="'$(ManagedDir)' == ''">$(ValheimDir)/valheim_Data/Managed</ManagedDir>
+    <PluginDll Condition="'$(PluginDll)' == ''">$(MSBuildProjectDirectory)/../bin/$(Configuration)/DeepNorthStaffVisuals.dll</PluginDll>
   </PropertyGroup>
 
   <!-- Where the game's DLLs are: the donor test reads the game's asset list next to them. -->
+  <ItemGroup>
+    <!-- Read by HookCheckTests: where the game DLLs and the built plugin are. -->
+    <AssemblyMetadata Include="PluginDll" Value="$(PluginDll)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The hook check (HookCheck.cs) reads the built plugin and the game DLLs as files. -->
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+    <!-- The plugin's Harmony (HarmonyX via BepInEx.Core, the same version as the plugin, so Dependabot moves both
+         together), for FakeHooks.cs. ExcludeAssets="build": its targets file keeps Mono.Cecil (and Harmony) out of
+         the output, right for a plugin, not for this program. -->
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" ExcludeAssets="build" />
+  </ItemGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>ManagedDir</_Parameter1>
@@ -38,6 +53,9 @@
     </Reference>
     <Reference Include="assembly_utils">
       <HintPath>$(ManagedDir)/assembly_utils.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_guiutils">
+      <HintPath>$(ManagedDir)/assembly_guiutils.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(ManagedDir)/UnityEngine.CoreModule.dll</HintPath>

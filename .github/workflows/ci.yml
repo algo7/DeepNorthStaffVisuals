@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-  workflow_call:
+  workflow_call: # release.yml, daily.yml
     outputs:
       version:
         description: The version, from the git tag (MinVer)
@@ -45,8 +45,11 @@ jobs:
         id: version
         run: echo "version=$(python3 -c 'import json; print(json.load(open("bin/package/manifest.json"))["version_number"])')" >> "$GITHUB_OUTPUT"
 
+      # Not on the daily run (daily.yml): the zip is still built (Package), just not kept. In a called workflow the
+      # event is the caller's: release.yml's tag push, so releases get it.
       - uses: actions/upload-artifact@v7
+        if: github.event_name != 'schedule'
         with:
-          name: package
+          name: package-zip
           path: Algo7-DeepNorthStaffVisuals-${{ steps.version.outputs.version }}.zip
           if-no-files-found: error
