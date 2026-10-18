@@ -8,13 +8,16 @@ namespace DeepNorthStaffVisuals
     /// weapon (Fit.Point) and turns with it (Fit.Rotate); transform scales stay as the donor has them (some systems grow their
     /// particles with their parents' scale), only the emitter shapes stretch. Emitters that follow the weapon
     /// (Looks.FollowsWeapon) come off the weapon's surface instead, when it has one to give; ring emitters
-    /// (Looks.SpreadsAlongWeapon) repeat along its length.
+    /// (Looks.SpreadsAlongWeapon) repeat along its length, a cone that leans to one side twinned with its mirror image.
     /// </summary>
     internal static class Copier
     {
         /// <param name="surface">The weapon's main mesh to emit from, or null to keep every emitter's fitted shape.</param>
         /// <param name="rateBoost">Extra particle rate for the look (Looks.RateBoost).</param>
-        public static void Copy(Transform part, Transform donorModel, Transform container, Fit fit, MeshRenderer surface, double rateBoost)
+        /// <param name="ringRate">The share of the game's rate each ring runs at for the look (Looks.RingRate).</param>
+        /// <param name="ringLife">The share of the game's lifetime for what each ring emits (Looks.RingLife).</param>
+        public static void Copy(Transform part, Transform donorModel, Transform container, Fit fit, MeshRenderer surface, double rateBoost,
+            double ringRate, double ringLife)
         {
             var copy = Object.Instantiate(part.gameObject, container, false).transform;
             var toDonor = donorModel.worldToLocalMatrix;
@@ -48,8 +51,12 @@ namespace DeepNorthStaffVisuals
                 var emission = copiedSystems[i].emission;
                 if (Looks.SpreadsAlongWeapon(name))
                 {
-                    // each ring at the game's own rate: more rings are already more of it
+                    // each ring at the game's own rate (more rings are already more of it), times the look's share
                     emission.rateOverTimeMultiplier = originalSystems[i].emission.rateOverTimeMultiplier;
+                    Scale(copiedSystems[i], ringRate);
+                    // before Spread: where the rings go follows how far their particles drift in their lifetime
+                    var main = copiedSystems[i].main;
+                    main.startLifetime = Times(main.startLifetime, ringLife);
                     rings.Add(copiedSystems[i]);
                 }
                 else
@@ -62,7 +69,9 @@ namespace DeepNorthStaffVisuals
         }
 
         /// <summary>
-        /// Repeats a ring emitter along the weapon's length (Fit.RingFractions), each copy turned like the fitted one.
+        /// Repeats a ring emitter along the weapon's length (Fit.RingFractions), each copy turned like the fitted one. A cone
+        /// that leans to one side (<see cref="Leans"/>) gets a twin at each spot, turned half a turn around the weapon, each
+        /// at half the rate, so it leans to both sides alike.
         /// </summary>
         private static void Spread(ParticleSystem ring, Transform container, Fit fit)
         {
@@ -72,13 +81,54 @@ namespace DeepNorthStaffVisuals
             var length = fit.Target.Size(0);
             var at = fit.Target.Fraction(FromUnity(fitted), 0);
             var rotation = t.rotation;
+            var twins = Leans(ring, container, fit);
+            if (twins) Scale(ring, 0.5); // before any copy is made: the copies take the halved rate with them
+            var mirrored = Quaternion.AngleAxis(180, container.TransformDirection(axis)) * rotation;
             var fractions = Fit.RingFractions(length, Drift(ring));
             for (var i = 0; i < fractions.Count; i++)
             {
-                var copy = i == 0 ? t : Object.Instantiate(t.gameObject, t.parent, false).transform;
-                copy.position = container.TransformPoint(fitted + axis * (float)((fractions[i] - at) * length));
-                copy.rotation = rotation;
+                var position = container.TransformPoint(fitted + axis * (float)((fractions[i] - at) * length));
+                Place(i == 0 ? t : Object.Instantiate(t.gameObject, t.parent, false).transform, position, rotation);
+                if (twins) Place(Object.Instantiate(t.gameObject, t.parent, false).transform, position, mirrored);
             }
+        }
+
+        private static void Place(Transform copy, Vector3 position, Quaternion rotation)
+        {
+            copy.position = position;
+            copy.rotation = rotation;
+        }
+
+        /// <summary>
+        /// A cone ring that fires off to one side of the weapon (Fit.Leans). The Thunderblood Atgeir aims its bolts 17° and 6°
+        /// towards its blade and curves them back with a one-way spin; on a staff, which has no blade, the whole look leans
+        /// to one side, and taking out only the aim leaves the spin leaning it the other way. Bleeding's swirls are circles.
+        /// </summary>
+        private static bool Leans(ParticleSystem ring, Transform container, Fit fit)
+        {
+            if (!IsCone(ring)) return false;
+            // A cone fires along its shape's z. The container sits on the model unturned: its space is the model's, the fit's.
+            var aim = container.InverseTransformDirection(ring.transform.rotation * Quaternion.Euler(ring.shape.rotation) * Vector3.forward);
+            return fit.Leans(FromUnity(aim));
+        }
+
+        /// <summary>A share of the particles (factor up to 1): the rate, and the chance of each burst, times factor.</summary>
+        private static void Scale(ParticleSystem system, double factor)
+        {
+            var emission = system.emission;
+            emission.rateOverTimeMultiplier *= (float)factor;
+            for (var i = 0; i < emission.burstCount; i++)
+            {
+                var burst = emission.GetBurst(i);
+                burst.probability *= (float)factor;
+                emission.SetBurst(i, burst);
+            }
+        }
+
+        private static bool IsCone(ParticleSystem system)
+        {
+            var shape = system.shape.shapeType;
+            return shape == ParticleSystemShapeType.Cone || shape == ParticleSystemShapeType.ConeVolume;
         }
 
         /// <summary>
@@ -89,10 +139,28 @@ namespace DeepNorthStaffVisuals
         private static double Drift(ParticleSystem ring)
         {
             var velocity = ring.velocityOverLifetime;
-            var shape = ring.shape.shapeType;
-            var cone = shape == ParticleSystemShapeType.Cone || shape == ParticleSystemShapeType.ConeVolume;
-            return Fit.Drift(cone, Mean(ring.main.startSpeed), velocity.enabled ? Mean(velocity.z) : 0,
+            return Fit.Drift(IsCone(ring), Mean(ring.main.startSpeed), velocity.enabled ? Mean(velocity.z) : 0,
                 velocity.enabled ? Mean(velocity.radial) : 0, Mean(ring.main.startLifetime));
+        }
+
+        /// <summary>A curve with every value times factor: both constants, or the curves' multiplier (it scales every key).</summary>
+        private static ParticleSystem.MinMaxCurve Times(ParticleSystem.MinMaxCurve curve, double factor)
+        {
+            var f = (float)factor;
+            switch (curve.mode)
+            {
+                case ParticleSystemCurveMode.Constant:
+                    curve.constant *= f;
+                    break;
+                case ParticleSystemCurveMode.TwoConstants:
+                    curve.constantMin *= f;
+                    curve.constantMax *= f;
+                    break;
+                default:
+                    curve.curveMultiplier *= f;
+                    break;
+            }
+            return curve;
         }
 
         private static float Mean(ParticleSystem.MinMaxCurve curve)

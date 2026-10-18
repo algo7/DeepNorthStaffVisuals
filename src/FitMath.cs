@@ -223,6 +223,20 @@ namespace DeepNorthStaffVisuals
             return fractions;
         }
 
+        /// <summary>How far off the weapon's length a cone may point and still count as straight.</summary>
+        public const double LeanDegrees = 1;
+
+        /// <summary>
+        /// A cone pointing this way on the target (a target-space direction) leans off the weapon's length, to one side
+        /// (the Thunderblood Atgeir's bolts lean 17° and 6° towards its blade, which a staff doesn't have).
+        /// </summary>
+        public bool Leans(V3 aim)
+        {
+            var length = aim.Length;
+            if (length < 1e-9) return false;
+            return Math.Abs(V3.Dot(aim, Target.Unit(0))) / length < Math.Cos(LeanDegrees * Math.PI / 180);
+        }
+
         /// <summary>A donor-space point → the target-space point (business end onto business end, plus the fix's shift).</summary>
         public V3 Point(V3 p)
         {

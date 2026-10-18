@@ -199,6 +199,23 @@ internal static partial class Tests
         Near(0.40 + 0.05 * 0.6 / 0.45, blackMetal.Fraction(q, 0), "business end onto business end along the shaft");
     }
 
+    private static void Test_Fit_WhichConesLean()
+    {
+        var fit = new Fit(new ModelFrame(GoldSword, 1), new ModelFrame(IronSword, 1), 0, 0, null);
+        // the Thunderblood Atgeir's bolts as they land on a staff: 17° and 9° off the shaft, towards its blade
+        True(fit.Leans(new V3(0.30, -0.03, 0.95)), "its main bolts, 17° off");
+        True(fit.Leans(new V3(0.10, 0, 0.99)), "6° off");
+        True(fit.Leans(new V3(-0.3, 0, -0.95)), "fired towards the hand, 17° off");
+        False(fit.Leans(new V3(0, 0, 2.5)), "Storming's bolts, straight up the weapon (any length)");
+        False(fit.Leans(new V3(0, 0, -1)), "straight down the weapon");
+        False(fit.Leans(new V3(0, 0, 0)), "no aim");
+
+        var a = 21 * Math.PI / 180;
+        var tilted = new Fit(new ModelFrame(GoldSword, 1), Tilted(21, new V3(-0.15, -0.035, -0.75), new V3(0.15, 0.035, 2.14)), 0, 0, null);
+        False(tilted.Leans(new V3(Math.Sin(a), 0, Math.Cos(a))), "along a tilted shaft");
+        True(tilted.Leans(new V3(0, 0, 1)), "the model's z on a shaft tilted 21°");
+    }
+
     private static void Test_Fit_TracingRateFollowsTheWholeWeapon()
     {
         var dyrnwyn = new Fit(new ModelFrame(Dyrnwyn, 1), new ModelFrame(Atgeir, 1), 0.21, 0.40, null);

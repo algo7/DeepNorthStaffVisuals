@@ -64,9 +64,9 @@ internal static partial class Tests
     private static void Test_Looks_WhichEmittersFollowTheWeapon()
     {
         foreach (var name in new[] { "flames", "flames (1)", "fx_Torch_Basic", "fx_Torch_Basic (1)", "Burny vfx", "Clouds", "Spores",
-                     "Spores (1)", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" })
+                     "Spores (1)", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip", "Sparcs", "Splats" })
             True(Looks.FollowsWeapon(name), $"{name} comes off the weapon's surface");
-        foreach (var name in new[] { "flare", "Lightning", "Lightning (3)", "Sparcs", "Splats", "Swirls", "Point light", "" })
+        foreach (var name in new[] { "flare", "Lightning", "Lightning (3)", "Swirls", "Point light", "" })
             False(Looks.FollowsWeapon(name), $"{name} keeps its own shape");
     }
 
@@ -75,6 +75,25 @@ internal static partial class Tests
         Eq(2.5, Looks.RateBoost("Bleeding"), "Bleeding: 2.5x the swirls and drips (it has no light and little else)");
         foreach (var look in new[] { "Frostfire", "Thunderblood", "Storming", "Primal", "Dyrnwyn", "Frostner", Looks.Plain, "NoSuchLook" })
             Eq(1.0, Looks.RateBoost(look), $"{look}: the game's rate");
+    }
+
+    private static void Test_Looks_ThunderbloodFewerBolts()
+    {
+        Eq(0.6, Looks.RingRate("Thunderblood"), "Thunderblood: 60 % of the game's bolts per ring");
+        foreach (var look in new[] { "Frostfire", "Bleeding", "Storming", "Primal", "Dyrnwyn", "Frostner", Looks.Plain, "NoSuchLook" })
+            Eq(1.0, Looks.RingRate(look), $"{look}: the game's rate per ring");
+    }
+
+    private static void Test_Looks_ThunderboltsFadeSooner()
+    {
+        Eq(0.6, Looks.RingLife("Thunderblood"), "Thunderblood's bolts live 60 % as long, so they don't fan out at the head");
+        foreach (var look in new[] { "Frostfire", "Bleeding", "Storming", "Primal", "Dyrnwyn", "Frostner", Looks.Plain, "NoSuchLook" })
+            Eq(1.0, Looks.RingLife(look), $"{look}: the game's lifetime");
+        // the main bolts: fired at 0.5 m/s, pulled back at 0.05, living 2-3 s: 1.125 m, at 60 % 0.675 m
+        var drift = Fit.Drift(true, 0.5, 0, -0.05, 2.5 * Looks.RingLife("Thunderblood"));
+        Eq(1, Fit.RingFractions(1.13, Fit.Drift(true, 0.5, 0, -0.05, 2.5)).Count, "Echo Spike before: one spot, at the bottom");
+        Eq(2, Fit.RingFractions(1.13, drift).Count, "Echo Spike: two spots");
+        Eq(5, Fit.RingFractions(2.33, drift).Count, "Lightning Strike: five instead of four");
     }
 
     private static void Test_Looks_SwirlsSpreadAlongTheWeapon()

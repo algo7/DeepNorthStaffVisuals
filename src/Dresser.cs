@@ -271,7 +271,9 @@ namespace DeepNorthStaffVisuals
             var container = new GameObject(EffectKit.Container);
             container.SetActive(false);
             container.transform.SetParent(model, false);
-            foreach (var part in donor.Parts) Copier.Copy(part, donor.Model, container.transform, fit, surface, Looks.RateBoost(look));
+            foreach (var part in donor.Parts)
+                Copier.Copy(part, donor.Model, container.transform, fit, surface, Looks.RateBoost(look), Looks.RingRate(look),
+                    Looks.RingLife(look));
             container.SetActive(true);
         }
     }

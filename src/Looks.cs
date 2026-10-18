@@ -94,11 +94,16 @@ namespace DeepNorthStaffVisuals
 
         /// <summary>
         /// The donors' emitters that come off the weapon's own surface (flames, fire, clouds, spores, frost, Bleeding's
-        /// drips), by name; " (1)"-style copies count as the same. Sparks, splats and flares keep their own shapes; Bleeding's
-        /// swirls and the lightning repeat along the weapon instead (<see cref="SpreadsAlongWeapon"/>).
+        /// drips, Thunderblood's sparks and splats), by name; " (1)"-style copies count as the same. Thunderblood's sparks and
+        /// splats burst out of half-spheres facing the Thunderblood Atgeir's blade: in their own shape they'd all fly off one
+        /// side of a staff. Flares keep their own shapes; Bleeding's swirls and the lightning repeat along the weapon instead
+        /// (<see cref="SpreadsAlongWeapon"/>).
         /// </summary>
         private static readonly string[] s_followers =
-            { "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip" };
+        {
+            "flames", "fx_Torch_Basic", "Burny vfx", "Clouds", "Spores", "Spores_World", "soft cloud", "vfx_BloodHit 1", "blood drip",
+            "Sparcs", "Splats",
+        };
 
         /// <summary>
         /// Emitters copied several times along the weapon (Fit.RingFractions): Bleeding's swirls circle the shaft around
@@ -124,6 +129,21 @@ namespace DeepNorthStaffVisuals
         /// is the red painted blade, which can't be copied) gets 2.5x so it shows. 1 for every other look.
         /// </summary>
         public static double RateBoost(string look) => look == "Bleeding" ? 2.5 : 1;
+
+        /// <summary>
+        /// The share of the game's rate each ring along the weapon runs at (<see cref="SpreadsAlongWeapon"/>): Thunderblood's
+        /// bolts at 60 %: its web, spread along the whole staff and to both sides, is busier than on the game's own weapons.
+        /// 1 for every other look.
+        /// </summary>
+        public static double RingRate(string look) => look == "Thunderblood" ? 0.6 : 1;
+
+        /// <summary>
+        /// How long, as a share of the game's lifetime, what each ring along the weapon emits lives: Thunderblood's bolts 60 %.
+        /// They spread further out the further they fly, so from one spot near the bottom of Echo Spike they fanned out widest
+        /// at its head; shorter, they start from more spots (Fit.RingFractions follows their drift) and still reach the tip.
+        /// 1 for every other look.
+        /// </summary>
+        public static double RingLife(string look) => look == "Thunderblood" ? 0.6 : 1;
 
         /// <summary>
         /// A look's code on a player's shared record: Plain (or an unknown look) is 0, every other look its name's stable
